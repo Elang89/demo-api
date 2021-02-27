@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  db:
+    restart: always
+    build:
+      context: ./
+      dockerfile: pg.dockerfile
+    ports:
+      - 5432:5432
+    volumes:
+      - /var/lib/postgresql/data
+  # app:
+  #   restart: always
+  #   build:
+  #     context: ./
+  #     dockerfile: dev.dockerfile
+  #   ports:
+  #     - 8000:8000
+  #   depends_on:
+  #     - spanner
+  #     - keycloak
