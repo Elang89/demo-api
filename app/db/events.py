@@ -1,15 +1,17 @@
 import sqlalchemy
-
+from databases import Database
 from fastapi import FastAPI
 from loguru import logger
+
 from app.core.config import DB_DRIVER, DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
-from databases import Database
-from sqlalchemy.orm import Session, sessionmaker
 
 
 async def connect_to_db(app: FastAPI) -> None:
     logger.info(
-        "Establishing connection to database {0} using driver {1} with user {2} on host and port: {3}:{4}",
+        """
+        Establishing connection to database {0}
+        using driver {1} with user {2} on host and port: {3}:{4}
+        """,
         repr(DB_NAME),
         repr(DB_DRIVER),
         repr(DB_USER),

@@ -24,6 +24,8 @@ def get_application() -> FastAPI:
     )
 
     if DEBUG:
+        directory = "{current_dir}/tmp/output.pstats".format(current_dir=os.getcwd())
+
         application.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
@@ -31,7 +33,14 @@ def get_application() -> FastAPI:
             allow_headers=["*"],
         )
 
-        application.add_middleware()
+        application.add_middleware(
+            CProfileMiddleware,
+            enable=True,
+            server_app=application,
+            filename=directory,
+            strip_dirs=False,
+            sort_by="cumulative",
+        )
 
     application.add_event_handler("startup", create_startup_handler(application))
 

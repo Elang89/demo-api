@@ -1,8 +1,7 @@
-from typing import List, Dict
-from databases import Database
-from sqlalchemy import insert, text, table, column
+from typing import Dict, List
+
+from sqlalchemy import text
 from sqlalchemy.orm import Query
-from loguru import logger
 
 from app.db.repositories.base import BaseRepository
 from app.models.recipe import RecipeModel, RecipeOrm
@@ -21,14 +20,17 @@ class RecipeRepository(BaseRepository):
         self,
         limit: int,
         offset: int,
-        sort_params: Dict[str, str] = {},
-        filters: Dict[str, str] = {},
+        sort_params: Dict[str, str] = None,
+        filters: List[str] = None,
     ) -> List[RecipeModel]:
 
         query = RecipeOrm.table().select().limit(limit).offset(offset)
 
         if sort_params:
-            query = self._add_sorting(query)
+            query = self._add_sorting(query, sort_params)
+
+        if filters:
+            query = self._add_filters(query, filters)
 
         recipes = await self.db.fetch_all(query)
 
@@ -46,10 +48,14 @@ class RecipeRepository(BaseRepository):
     def _add_sorting(self, query: Query, sort_params: Dict[str, str]):
         for sort_key, sort_value in sort_params.items():
             if sort_value == "asc":
-                query.order_by(RecipeOrm.table.c[sort_key].asc())
+                query = query.order_by(RecipeOrm.table().c[sort_key].asc())
             elif sort_value == "desc":
-                query.order_by(RecipeOrm.table.c[sort_key].desc())
+                query = query.order_by(RecipeOrm.table().c[sort_key].desc())
         return query
 
-    def _add_filters(self, query, filters: Dict[str, str]):
-        pass
+    def _add_filters(self, query: Query, filters: List[str]):
+
+        for filter_param in filters:
+            query = query.where(text(filter_param))
+
+        return query

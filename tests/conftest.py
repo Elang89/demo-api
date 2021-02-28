@@ -1,23 +1,20 @@
 import time
+import uuid
+from os import environ
+from typing import List
+
 import docker as libdocker
 import pytest
-import alembic.config
-import uuid
-
 from asgi_lifespan import LifespanManager
-from alembic.config import Config
 from databases import Database
 from faker import Faker
 from fastapi import FastAPI
 from httpx import AsyncClient
-from os import environ
-from typing import List
 
+import alembic.config
+from alembic.config import Config
 from app.db.repositories.recipe_repository import RecipeRepository
 from app.models.recipe import RecipeModel
-
-from tests.testing_helpers import ping_postgres, pull_image
-
 
 PG_DOCKER_IMAGE = "postgres:13.0-alpine"
 
@@ -30,7 +27,7 @@ def docker() -> libdocker.APIClient:
 
 @pytest.fixture(scope="session", autouse=True)
 def db_server(docker: libdocker.APIClient) -> None:
-    alembic_config = Config()
+    Config()
     container = docker.create_container(
         image=PG_DOCKER_IMAGE,
         name="test-postgres-{}".format(uuid.uuid4()),

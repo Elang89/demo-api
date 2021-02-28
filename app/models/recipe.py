@@ -1,12 +1,12 @@
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 from uuid import UUID, uuid4
-from sqlalchemy import Column, String, Text, DateTime
+
 from pydantic import BaseModel, Field
+from sqlalchemy import Column, DateTime, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 
 from app.models.custom import GUID
-
 
 Base = declarative_base()
 

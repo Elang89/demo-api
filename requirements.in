@@ -25,3 +25,4 @@ asyncpg
 psycopg2
 pydantic-sqlalchemy
 fastapi-cprofile
+luqum

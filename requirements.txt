@@ -51,6 +51,7 @@ idna==2.10                # via requests, rfc3986
 iniconfig==1.0.1          # via pytest
 isort[pyproject]==4.3.21  # via -r requirements.in, flake8-isort
 loguru==0.5.1             # via -r requirements.in
+luqum==0.11.0             # via -r requirements.in
 mako==1.1.4               # via alembic
 markupsafe==1.1.1         # via mako
 mccabe==0.6.1             # via flake8
@@ -62,6 +63,7 @@ pathspec==0.8.0           # via black
 pbr==5.5.0                # via stevedore
 pep8-naming==0.9.1        # via wemake-python-styleguide
 pluggy==0.13.1            # via pytest
+ply==3.11                 # via luqum
 psycopg2==2.8.6           # via -r requirements.in
 py==1.9.0                 # via pytest
 pycodestyle==2.6.0        # via flake8, flake8-bandit, flake8-debugger
