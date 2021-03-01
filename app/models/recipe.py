@@ -34,3 +34,9 @@ class RecipeModel(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UpdatedRecipeModel(BaseModel):
+    name: Optional[str] = Field(max_length=50)
+    description: Optional[str]
+    updated_at: datetime = Field(default_factory=datetime.utcnow)

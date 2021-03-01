@@ -13,8 +13,10 @@ QUERY_MAX_LIMIT = 200
 QUERY_DEFAULT_OFFSET = 0
 
 # Query recipe regexes
-QUERY_RECIPE_SORT_REGEX = ""
-QUERY_RECIPE_FILTER_REGEX = ""
+QUERY_RECIPE_SORT_REGEX = "(name|created_at|updated_at):(asc|desc)"
+QUERY_RECIPE_FILTER_REGEX = (
+    "((name)\sLIKE\s'.*')|((created_at|updated_at)\s[><=][=]?\s'.*')"
+)
 
 # Status codes
 POST_RECIPE_STATUS = 201

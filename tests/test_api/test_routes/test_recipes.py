@@ -5,9 +5,16 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from starlette import status
 
-from app.models.recipe import RecipeModel
+from app.models.recipe import RecipeModel, UpdatedRecipeModel
 
 pytestmark = pytest.mark.asyncio
+
+
+GET_RECIPES_ROUTE = "recipes:get-recipes"
+GET_ONE_RECIPES_ROUTE = "recipes:get-one-recipe"
+POST_RECIPES_ROUTE = "recipes:create-recipe"
+UPDATE_RECIPES_ROUTE = "recipes:update-recipe"
+DELTE_RECIPES_ROUTE = "recipes:delete-recipe"
 
 
 @pytest.mark.parametrize(
@@ -21,7 +28,7 @@ async def test_create_recipe(
     app: FastAPI, client: AsyncClient, id: str, name: str, description: str
 ) -> None:
     response = await client.post(
-        app.url_path_for("recipes:create-recipe"),
+        app.url_path_for(POST_RECIPES_ROUTE),
         json={"id": id, "name": name, "description": description},
     )
 
@@ -34,96 +41,141 @@ async def test_create_recipe(
     assert recipe.description == description
 
 
-@pytest.mark.skip(reason="Not Implemented")
-async def test_create_recipe_unprocessable_entity(
-    app: FastAPI, client: AsyncClient
-) -> None:
-    pass
+async def test_create_unprocessable_recipe(app: FastAPI, client: AsyncClient) -> None:
+    response = await client.post(
+        app.url_path_for(POST_RECIPES_ROUTE), json={"stuff": "something"}
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def test_get_recipes(app: FastAPI, client: AsyncClient) -> None:
-    response = await client.get(app.url_path_for("recipes:get-recipes"))
-    data = response.json()
+    response = await client.get(app.url_path_for(GET_RECIPES_ROUTE))
 
     assert response.status_code == status.HTTP_200_OK
-    assert isinstance(data, list) == True
-    assert len(data) <= 200
+
+    recipes = response.json()
+
+    assert isinstance(recipes, list) == True
+    assert len(recipes) <= 200
 
 
 async def test_get_sorted_recipes(
     app: FastAPI, client: AsyncClient, test_multiple_recipes: List[RecipeModel]
 ) -> None:
     response = await client.get(
-        app.url_path_for("recipes:get-recipes"),
+        app.url_path_for(GET_RECIPES_ROUTE),
         params={"sort": "name:asc"},
     )
-    data = [RecipeModel(**recipe) for recipe in response.json()]
 
     assert response.status_code == status.HTTP_200_OK
-    assert data == sorted(data, key=lambda recipe: recipe.name)
+
+    recipes = [RecipeModel(**recipe) for recipe in response.json()]
+
+    assert recipes == sorted(recipes, key=lambda recipe: recipe.name)
 
 
 async def test_get_filtered_recipes(
     app: FastAPI, client: AsyncClient, test_multiple_recipes: List[RecipeModel]
 ) -> None:
     response = await client.get(
-        app.url_path_for("recipes:get-recipes"), params={"filters": r"name LIKE 's%'"}
+        app.url_path_for(GET_RECIPES_ROUTE), params={"filters": r"name LIKE 's%'"}
     )
 
-    data = [RecipeModel(**recipe) for recipe in response.json()]
-
     assert response.status_code == status.HTTP_200_OK
-    assert data == list(filter(lambda recipe: recipe.name.contains("s"), data))
+
+    recipes = [RecipeModel(**recipe) for recipe in response.json()]
+
+    assert recipes == list(filter(lambda recipe: recipe.name.contains("s"), recipes))
 
 
-@pytest.mark.skip(reason="Not Implemented")
-async def test_api_get_illegal_filtered_recipes(
+async def test_get_unprocessable_sorted_recipes(
     app: FastAPI, client: AsyncClient
 ) -> None:
-    pass
+    response = await client.get(
+        app.url_path_for(GET_RECIPES_ROUTE), params={"sort": "someword:up"}
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+async def test_get_unprocessable_filtered_recipes(
+    app: FastAPI, client: AsyncClient
+) -> None:
+    response = await client.get(
+        app.url_path_for(GET_RECIPES_ROUTE), params={"filters": "; DROP TABLE recipes"}
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def test_get_filtered_and_sorted_recipes(
     app: FastAPI, client: AsyncClient, test_multiple_recipes: List[RecipeModel]
 ) -> None:
     response = await client.get(
-        app.url_path_for("recipes:get-recipes"),
+        app.url_path_for(GET_RECIPES_ROUTE),
         params={"sort": "name:asc,created_at:desc", "filters": r"name LIKE 's%'"},
     )
 
-    data = [RecipeModel(**recipe) for recipe in response.json()]
-
     assert response.status_code == status.HTTP_200_OK
-    assert data == sorted(data, key=lambda recipe: recipe.name)
-    assert data == list(filter(lambda recipe: recipe.name.contains("f"), data))
+
+    recipes = [RecipeModel(**recipe) for recipe in response.json()]
+
+    assert recipes == sorted(recipes, key=lambda recipe: recipe.name)
+    assert recipes == list(filter(lambda recipe: recipe.name.contains("f"), recipes))
 
 
-@pytest.mark.skip(reason="Not Implemented")
 async def test_get_one_recipe(
     app: FastAPI, client: AsyncClient, test_recipe: RecipeModel
 ) -> None:
-    pass
+    recipe_id = test_recipe.id
+
+    response = await client.get(app.url_path_for(GET_ONE_RECIPES_ROUTE, id=recipe_id))
+
+    assert response.status_code == status.HTTP_200_OK
+    recipe = RecipeModel(**response.json())
+
+    assert recipe.id == test_recipe.id
 
 
-@pytest.mark.skip(reason="Not Implemented")
 async def test_update_recipe(
     app: FastAPI, client: AsyncClient, test_recipe: RecipeModel
 ) -> None:
-    pass
+    recipe = UpdatedRecipeModel(name="Something Else", description="Some other thing")
+
+    response = await client.patch(
+        app.url_path_for(UPDATE_RECIPES_ROUTE, id=test_recipe.id),
+        json={"name": recipe.name, "description": recipe.description},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    updated_recipe = RecipeModel(**response.json())
+
+    assert updated_recipe.id == test_recipe.id
+    assert recipe.name == updated_recipe.name
+    assert recipe.description == updated_recipe.description
 
 
 @pytest.mark.skip(reason="Not implemented")
-async def test_update_recipe_not_found(app: FastAPI, client: AsyncClient) -> None:
+async def test_update_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
     pass
 
 
-@pytest.mark.skip(reason="Not Implemented")
 async def test_delete_recipe(
     app: FastAPI, client: AsyncClient, test_recipe: RecipeModel
 ) -> None:
-    pass
+    response = await client.delete(
+        app.url_path_for(DELTE_RECIPES_ROUTE, id=test_recipe.id)
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    deleted_recipe = RecipeModel(**response.json())
+
+    assert deleted_recipe.id == test_recipe.id
 
 
 @pytest.mark.skip(reason="Not Implemented")
-async def test_delete_recipe_not_found(app: FastAPI, client: AsyncClient) -> None:
+async def test_delete_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
     pass

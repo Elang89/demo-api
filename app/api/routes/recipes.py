@@ -5,12 +5,14 @@ from fastapi.responses import JSONResponse
 
 from app.api.dependencies.database import get_repository
 from app.db.repositories.recipe_repository import RecipeRepository
-from app.models.recipe import RecipeModel
+from app.models.recipe import RecipeModel, UpdatedRecipeModel
 from app.resources.constants import (
     ALIAS_RECIPE,
     QUERY_DEFAULT_LIMIT,
     QUERY_DEFAULT_OFFSET,
     QUERY_MAX_LIMIT,
+    QUERY_RECIPE_FILTER_REGEX,
+    QUERY_RECIPE_SORT_REGEX,
     POST_RECIPE_STATUS,
     TAG_RECIPES,
 )
@@ -19,16 +21,17 @@ router = APIRouter()
 
 
 @router.get(
-    "/{recipe_id}",
-    name="recipes:get-one-recipes",
+    "/{id}",
+    name="recipes:get-one-recipe",
     tags=[TAG_RECIPES],
     response_class=JSONResponse,
     response_model=RecipeModel,
 )
 async def get_one_recipe(
-    id: str,
+    id: str, recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository))
 ) -> RecipeModel:
-    raise NotImplementedError()
+
+    return await recipe_repo.get_one(id)
 
 
 @router.get(
@@ -54,11 +57,13 @@ async def get_recipes(
         None,
         alias="sort",
         description="Sorting for collection",
+        regex=QUERY_RECIPE_SORT_REGEX,
     ),
     filters: Optional[List[str]] = Query(
         None,
         alias="filters",
         description="Filters for collection",
+        regex=QUERY_RECIPE_FILTER_REGEX,
     ),
     recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
 ) -> List[RecipeModel]:
@@ -92,24 +97,31 @@ async def create_recipe(
 
 
 @router.patch(
-    "/{recipe_id}",
+    "/{id}",
     name="recipes:update-recipe",
     tags=[TAG_RECIPES],
     response_class=JSONResponse,
     response_model=RecipeModel,
 )
-async def update_recipe(id: str) -> RecipeModel:
-    raise NotImplementedError()
+async def update_recipe(
+    id: str,
+    updated_recipe: UpdatedRecipeModel = Body(..., alias=ALIAS_RECIPE),
+    recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
+) -> RecipeModel:
+
+    return await recipe_repo.update_recipe(id, updated_recipe)
 
 
 @router.delete(
-    "/{recipe_id}",
+    "/{id}",
     name="recipes:delete-recipe",
     tags=[TAG_RECIPES],
     response_class=JSONResponse,
     response_model=RecipeModel,
 )
 async def delete_recipe(
-    id: str,
+    id: str, recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository))
 ) -> RecipeModel:
-    raise NotImplementedError()
+    recipe = await recipe_repo.delete_recipe(id)
+
+    return recipe

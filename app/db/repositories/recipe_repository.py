@@ -4,7 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Query
 
 from app.db.repositories.base import BaseRepository
-from app.models.recipe import RecipeModel, RecipeOrm
+from app.models.recipe import RecipeModel, RecipeOrm, UpdatedRecipeModel
 
 RECIPES_TABLE = "recipes"
 
@@ -37,13 +37,31 @@ class RecipeRepository(BaseRepository):
         return [RecipeModel(**recipe) for recipe in recipes]
 
     async def get_one(self, id: str):
-        raise NotImplementedError()
+        query = RecipeOrm.table().select().where(RecipeOrm.table().c["id"] == id)
+        recipe = await self.db.fetch_one(query)
 
-    async def updated(self, id: str, updated_recipe: RecipeModel):
-        raise NotImplementedError()
+        return RecipeModel(**recipe)
 
-    async def delete(self, id: str):
-        raise NotImplementedError()
+    async def update_recipe(
+        self, id: str, updated_recipe: UpdatedRecipeModel
+    ) -> RecipeModel:
+        query = (
+            RecipeOrm.table()
+            .update()
+            .where(RecipeOrm.table().c["id"] == id)
+            .values(**updated_recipe.dict())
+        )
+        await self.db.execute(query)
+
+        return await self.get_one(id)
+
+    async def delete_recipe(self, id: str) -> RecipeModel:
+        recipe = await self.get_one(id)
+
+        query = RecipeOrm.table().delete().where(RecipeOrm.table().c["id"] == id)
+        await self.db.execute(query)
+
+        return recipe
 
     def _add_sorting(self, query: Query, sort_params: Dict[str, str]):
         for sort_key, sort_value in sort_params.items():
