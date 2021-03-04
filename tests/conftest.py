@@ -1,5 +1,6 @@
 import time
 import uuid
+import threading
 from os import environ
 from typing import List
 
@@ -14,9 +15,15 @@ from httpx import AsyncClient
 import alembic.config
 from alembic.config import Config
 from app.db.repositories.recipe_repository import RecipeRepository
+from app.db.repositories.ingredient_repository import IngredientRepository
 from app.models.recipe import RecipeModel
+from app.models.ingredient import IngredientModel
 
 PG_DOCKER_IMAGE = "postgres:13.0-alpine"
+
+
+lock = threading.Lock()
+threaded_count = 0
 
 
 @pytest.fixture(scope="session")
@@ -108,9 +115,30 @@ async def test_multiple_recipes(db: Database, faker: Faker) -> List[RecipeModel]
     repo = RecipeRepository(db)
     recipes = []
 
-    for _ in range(0, 50):
+    for _ in range(0, 500):
         recipe = await repo.create_recipe(
             RecipeModel(name=faker.name(), description=faker.text())
         )
         recipes.append(recipe)
     return recipes
+
+
+@pytest.fixture
+async def test_ingredient(db: Database, faker: Faker) -> IngredientModel:
+    repo = IngredientRepository(db)
+
+    return await repo.create_ingredient(
+        IngredientModel(name=faker.name(), description=faker.text())
+    )
+
+
+@pytest.fixture
+async def test_multiple_ingredients(
+    db: Database, faker: Faker
+) -> List[IngredientModel]:
+    repo = IngredientRepository(db)
+
+    for _ in range(0, 500):
+        recipe = await repo.create_ingredient(
+            IngredientModel(name=faker.name(), description=faker.text())
+        )

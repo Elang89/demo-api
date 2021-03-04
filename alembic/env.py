@@ -5,7 +5,6 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from os.path import join, dirname, abspath
 import sys
 import os
 

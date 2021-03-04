@@ -14,7 +14,7 @@ GET_RECIPES_ROUTE = "recipes:get-recipes"
 GET_ONE_RECIPES_ROUTE = "recipes:get-one-recipe"
 POST_RECIPES_ROUTE = "recipes:create-recipe"
 UPDATE_RECIPES_ROUTE = "recipes:update-recipe"
-DELTE_RECIPES_ROUTE = "recipes:delete-recipe"
+DELETE_RECIPES_ROUTE = "recipes:delete-recipe"
 
 
 @pytest.mark.parametrize(
@@ -122,7 +122,7 @@ async def test_get_filtered_and_sorted_recipes(
     recipes = [RecipeModel(**recipe) for recipe in response.json()]
 
     assert recipes == sorted(recipes, key=lambda recipe: recipe.name)
-    assert recipes == list(filter(lambda recipe: recipe.name.contains("f"), recipes))
+    assert recipes == list(filter(lambda recipe: recipe.name.contains("s"), recipes))
 
 
 async def test_get_one_recipe(
@@ -136,6 +136,16 @@ async def test_get_one_recipe(
     recipe = RecipeModel(**response.json())
 
     assert recipe.id == test_recipe.id
+    assert recipe.name == test_recipe.name
+    assert recipe.description == test_recipe.description
+
+
+async def test_get_one_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
+    recipe_id = "b26830fc-51b2-4182-92cc-bb233891a9fc"
+
+    response = await client.get(app.url_path_for(GET_ONE_RECIPES_ROUTE, id=recipe_id))
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 async def test_update_recipe(
@@ -152,21 +162,27 @@ async def test_update_recipe(
 
     updated_recipe = RecipeModel(**response.json())
 
-    assert updated_recipe.id == test_recipe.id
+    assert test_recipe.id == updated_recipe.id
     assert recipe.name == updated_recipe.name
     assert recipe.description == updated_recipe.description
 
 
-@pytest.mark.skip(reason="Not implemented")
 async def test_update_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
-    pass
+    recipe_id = "b26830fc-51b2-4182-92cc-bb233891a9fc"
+
+    response = await client.patch(
+        app.url_path_for(UPDATE_RECIPES_ROUTE, id=recipe_id),
+        json={"name": "Something", "description": "something else"},
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 async def test_delete_recipe(
     app: FastAPI, client: AsyncClient, test_recipe: RecipeModel
 ) -> None:
     response = await client.delete(
-        app.url_path_for(DELTE_RECIPES_ROUTE, id=test_recipe.id)
+        app.url_path_for(DELETE_RECIPES_ROUTE, id=test_recipe.id)
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -178,4 +194,8 @@ async def test_delete_recipe(
 
 @pytest.mark.skip(reason="Not Implemented")
 async def test_delete_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
-    pass
+    recipe_id = "b26830fc-51b2-4182-92cc-bb233891a9fc"
+
+    response = await client.get(app.url_path_for(GET_ONE_RECIPES_ROUTE, id=recipe_id))
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND

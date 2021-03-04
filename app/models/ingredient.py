@@ -11,8 +11,8 @@ from app.models.custom import GUID
 Base = declarative_base()
 
 
-class RecipeOrm(Base):
-    __tablename__ = "recipes"
+class IngredientOrm(Base):
+    __tablename__ = "ingredients"
 
     id = Column(GUID, primary_key=True)
     name = Column(String(50), nullable=False, unique=True)
@@ -22,10 +22,10 @@ class RecipeOrm(Base):
 
     @classmethod
     def table(cls):
-        return cls.__table__
+        return cls.__tablename__
 
 
-class RecipeModel(BaseModel):
+class IngredientModel(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     name: str = Field(max_length=50)
     description: str = Field(max_length=500)
@@ -36,7 +36,7 @@ class RecipeModel(BaseModel):
         orm_mode = True
 
 
-class UpdatedRecipeModel(BaseModel):
+class UpdatedIngredientModel(BaseModel):
     name: Optional[str] = Field(max_length=50)
     description: Optional[str] = Field(max_length=500)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

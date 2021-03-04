@@ -1,4 +1,4 @@
-FROM postgres:13.0-alpine
+FROM debezium/postgres:13-alpine
 
 ENV POSTGRES_USER root
 ENV POSTGRES_PASSWORD password

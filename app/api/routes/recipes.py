@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Body, Depends, Query
+from fastapi import APIRouter, Body, Depends, Query, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.api.dependencies.database import get_repository
@@ -13,8 +13,10 @@ from app.resources.constants import (
     QUERY_MAX_LIMIT,
     QUERY_RECIPE_FILTER_REGEX,
     QUERY_RECIPE_SORT_REGEX,
-    POST_RECIPE_STATUS,
+    STATUS_CREATED_201,
+    STATUS_NOT_FOUND_404,
     TAG_RECIPES,
+    RECIPE_DOES_NOT_EXIST,
 )
 
 router = APIRouter()
@@ -31,7 +33,14 @@ async def get_one_recipe(
     id: str, recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository))
 ) -> RecipeModel:
 
-    return await recipe_repo.get_one(id)
+    recipe = await recipe_repo.get_one_recipe(id)
+
+    if recipe is None:
+        raise HTTPException(
+            status_code=STATUS_NOT_FOUND_404, detail=RECIPE_DOES_NOT_EXIST
+        )
+
+    return recipe
 
 
 @router.get(
@@ -68,6 +77,7 @@ async def get_recipes(
     recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
 ) -> List[RecipeModel]:
     sort_params = {}
+    filter_params = []
 
     if sort:
         param_list = [sort_param.split(":") for sort_param in sort]
@@ -87,7 +97,7 @@ async def get_recipes(
     tags=[TAG_RECIPES],
     response_model=RecipeModel,
     response_class=JSONResponse,
-    status_code=POST_RECIPE_STATUS,
+    status_code=STATUS_CREATED_201,
 )
 async def create_recipe(
     recipe: RecipeModel = Body(..., alias=ALIAS_RECIPE),
@@ -108,8 +118,12 @@ async def update_recipe(
     updated_recipe: UpdatedRecipeModel = Body(..., alias=ALIAS_RECIPE),
     recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
 ) -> RecipeModel:
+    recipe = await recipe_repo.update_recipe(id, updated_recipe)
 
-    return await recipe_repo.update_recipe(id, updated_recipe)
+    if recipe is None:
+        raise HTTPException(STATUS_NOT_FOUND_404, detail=RECIPE_DOES_NOT_EXIST)
+
+    return recipe
 
 
 @router.delete(
@@ -123,5 +137,8 @@ async def delete_recipe(
     id: str, recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository))
 ) -> RecipeModel:
     recipe = await recipe_repo.delete_recipe(id)
+
+    if recipe is None:
+        raise HTTPException(STATUS_NOT_FOUND_404, detail=RECIPE_DOES_NOT_EXIST)
 
     return recipe
