@@ -1,11 +1,15 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Body, Depends, Query, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from app.api.dependencies.database import get_repository
 from app.db.repositories.recipe_repository import RecipeRepository
-from app.models.recipe import RecipeModel, UpdatedRecipeModel
+from app.models.recipe import (
+    RecipeModel,
+    RecipeModelWithIngredients,
+    UpdatedRecipeModel,
+)
 from app.resources.constants import (
     ALIAS_RECIPE,
     QUERY_DEFAULT_LIMIT,
@@ -13,10 +17,10 @@ from app.resources.constants import (
     QUERY_MAX_LIMIT,
     QUERY_RECIPE_FILTER_REGEX,
     QUERY_RECIPE_SORT_REGEX,
+    RECIPE_DOES_NOT_EXIST,
     STATUS_CREATED_201,
     STATUS_NOT_FOUND_404,
     TAG_RECIPES,
-    RECIPE_DOES_NOT_EXIST,
 )
 
 router = APIRouter()
@@ -27,11 +31,11 @@ router = APIRouter()
     name="recipes:get-one-recipe",
     tags=[TAG_RECIPES],
     response_class=JSONResponse,
-    response_model=RecipeModel,
+    response_model=RecipeModelWithIngredients,
 )
 async def get_one_recipe(
     id: str, recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository))
-) -> RecipeModel:
+) -> RecipeModelWithIngredients:
 
     recipe = await recipe_repo.get_one_recipe(id)
 
@@ -77,7 +81,6 @@ async def get_recipes(
     recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
 ) -> List[RecipeModel]:
     sort_params = {}
-    filter_params = []
 
     if sort:
         param_list = [sort_param.split(":") for sort_param in sort]
@@ -100,9 +103,10 @@ async def get_recipes(
     status_code=STATUS_CREATED_201,
 )
 async def create_recipe(
-    recipe: RecipeModel = Body(..., alias=ALIAS_RECIPE),
+    recipe: RecipeModelWithIngredients = Body(..., alias=ALIAS_RECIPE),
     recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
-) -> RecipeModel:
+) -> RecipeModelWithIngredients:
+
     return await recipe_repo.create_recipe(recipe)
 
 
@@ -111,13 +115,13 @@ async def create_recipe(
     name="recipes:update-recipe",
     tags=[TAG_RECIPES],
     response_class=JSONResponse,
-    response_model=RecipeModel,
+    response_model=RecipeModelWithIngredients,
 )
 async def update_recipe(
     id: str,
     updated_recipe: UpdatedRecipeModel = Body(..., alias=ALIAS_RECIPE),
     recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
-) -> RecipeModel:
+) -> RecipeModelWithIngredients:
     recipe = await recipe_repo.update_recipe(id, updated_recipe)
 
     if recipe is None:

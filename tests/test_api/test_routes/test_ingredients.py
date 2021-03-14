@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 import pytest
@@ -6,11 +7,13 @@ from httpx import AsyncClient
 from starlette import status
 
 from app.models.ingredient import IngredientModel, UpdatedIngredientModel
+from app.models.recipe import RecipeModel
 
 pytestmark = pytest.mark.asyncio
 
 GET_INGREDIENTS_ROUTE = "ingredients:get-ingredients"
 GET_ONE_INGREDIENTS_ROUTE = "ingredients:get-one-ingredient"
+GET_RECIPE_INGREDIENTS_ROUTE = "ingredients:get-recipe-ingredients"
 POST_INGREDIENTS_ROUTE = "ingredients:create-ingredient"
 UPDATE_INGREDIENTS_ROUTE = "ingredients:update-ingredient"
 DELETE_INGREDIENTS_ROUTE = "ingredients:delete-ingredient"
@@ -55,22 +58,24 @@ async def test_get_sorted_ingredients(
     app: FastAPI, client: AsyncClient, test_multiple_ingredients: List[IngredientModel]
 ) -> None:
     response = await client.get(
-        app.url_path_for(GET_INGREDIENTS_ROUTE), params="sort: created_at:asc"
+        app.url_path_for(GET_INGREDIENTS_ROUTE), params={"sort": "created_at:asc"}
     )
 
     assert response.status_code == status.HTTP_200_OK
 
-    ingredients = [IngredientModel(**ingredients) for ingredient in response.json()]
+    ingredients = [IngredientModel(**ingredient) for ingredient in response.json()]
 
-    assert ingredients == sorted(ingredients, key=lambda ingredient: ingredient.name)
+    assert ingredients == sorted(
+        ingredients, key=lambda ingredient: ingredient.created_at
+    )
 
 
 async def test_get_filtered_ingredients(
     app: FastAPI, client: AsyncClient, test_multiple_ingredients: List[IngredientModel]
 ) -> None:
     response = await client.get(
-        app.url_path_for(GET_ONE_INGREDIENTS_ROUTE),
-        parmas={"filters": r"name LIKE 's%'"},
+        app.url_path_for(GET_INGREDIENTS_ROUTE),
+        params={"filters": r"name LIKE 's%'"},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -106,9 +111,9 @@ async def test_get_unprocessable_filtered_ingredients(
 async def test_get_filtered_and_sorted_ingredients(
     app: FastAPI, client: AsyncClient, test_multiple_ingredients: List[IngredientModel]
 ) -> None:
-    response = client.get(
+    response = await client.get(
         app.url_path_for(GET_INGREDIENTS_ROUTE),
-        params={"sort": "name:asc,created_at:desc", "filters": r"name Like 'f%'"},
+        params={"sort": "name:asc,created_at:desc", "filters": r"name LIKE 'f%'"},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -136,7 +141,7 @@ async def test_get_one_ingredient(
 
 
 async def test_get_one_not_found_ingredient(app: FastAPI, client: AsyncClient) -> None:
-    ingredient_id = "735ee9e4-fd1f-4306-abe8-b697c2cd1884"
+    ingredient_id = str(uuid.uuid4())
 
     response = await client.get(
         app.url_path_for(GET_ONE_INGREDIENTS_ROUTE, id=ingredient_id)
@@ -159,14 +164,14 @@ async def test_update_ingredient(
 
 
 async def test_update_not_found_ingredient(app: FastAPI, client: AsyncClient) -> None:
-    ingredient_id = "3b8b8dfb-ed78-4f4a-aafb-41429f756f4f"
+    ingredient_id = str(uuid.uuid4())
 
     response = await client.patch(
         app.url_path_for(UPDATE_INGREDIENTS_ROUTE, id=ingredient_id),
         json={"name": "Something", "description": "something else"},
     )
 
-    assert response.status == status.HTTP_404_NOT_FOUND
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 async def test_delete_ingredient(
@@ -184,10 +189,25 @@ async def test_delete_ingredient(
 
 
 async def test_delete_not_found_ingredient(app: FastAPI, client: AsyncClient) -> None:
-    ingredient_id = "3358c414-a6ce-43e5-b7f4-fcb1482b3efa"
+    ingredient_id = str(uuid.uuid4())
 
     response = await client.delete(
         app.url_path_for(DELETE_INGREDIENTS_ROUTE, id=ingredient_id)
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.skip(reason="Not implemented yet")
+async def test_get_ingredients_for_recipe(
+    app: FastAPI, client: AsyncClient, test_recipe: RecipeModel
+) -> None:
+    response = await client.get(
+        app.url_path_for(GET_RECIPE_INGREDIENTS_ROUTE, id=test_recipe.id)
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    recipe_ingredients = response.json()
+
+    assert isinstance(recipe_ingredients, list) == True

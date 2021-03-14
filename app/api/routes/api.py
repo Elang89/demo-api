@@ -1,8 +1,7 @@
 from fastapi import APIRouter
 
-from app.api.routes import recipes, ingredients
-from app.resources.constants import TAG_RECIPES, TAG_INGREDIENTS
-
+from app.api.routes import ingredients, recipes
+from app.resources.constants import TAG_INGREDIENTS, TAG_RECIPES
 
 router = APIRouter()
 router.include_router(recipes.router, tags=[TAG_RECIPES], prefix="/recipes")

@@ -1,15 +1,35 @@
 from typing import Dict, List, Optional
+from sqlalchemy import select
 
 from app.db.repositories.base import BaseRepository
-from app.models.recipe import RecipeModel, RecipeOrm, UpdatedRecipeModel
+from app.models.recipe import (
+    RecipeModel,
+    RecipeModelWithIngredients,
+    RecipeOrm,
+    UpdatedRecipeModel,
+)
+from app.models.ingredient import IngredientOrm, IngredientForRecipe
+from app.models.recipes_ingredients import recipes_ingredients
 
 RECIPES_TABLE = "recipes"
 
 
 class RecipeRepository(BaseRepository):
-    async def create_recipe(self, recipe: RecipeModel) -> RecipeModel:
-        sql = RecipeOrm.table().insert().values(**recipe.dict())
-        await self.db.execute(sql)
+    async def create_recipe(
+        self, recipe: RecipeModelWithIngredients
+    ) -> RecipeModelWithIngredients:
+        recipe_values = recipe.dict()
+        ingredients = [
+            (recipe.id, ingredient.get("id"))
+            for ingredient in recipe_values.get("ingredients")
+        ]
+        recipe_values.pop("ingredients")
+
+        sql1 = RecipeOrm.table().insert().values(recipe_values)
+        sql2 = recipes_ingredients.insert().values(ingredients)
+
+        await self.db.execute(sql1)
+        await self.db.execute(sql2)
 
         return recipe
 
@@ -34,19 +54,39 @@ class RecipeRepository(BaseRepository):
         return [RecipeModel(**recipe) for recipe in recipes]
 
     async def get_one_recipe(self, id: str) -> Optional[RecipeModel]:
-        query = RecipeOrm.table().select().where(RecipeOrm.table().c["id"] == id)
-        recipe = await self.db.fetch_one(query)
+        recipes_table = RecipeOrm.table()
+        ingredients_table = IngredientOrm.table()
+
+        join = ingredients_table.join(
+            recipes_ingredients,
+            (ingredients_table.c.id == recipes_ingredients.c.ingredient_id)
+            & (recipes_ingredients.c.recipe_id == id),
+            isouter=False,
+        )
+
+        ingredients_query = select(
+            [ingredients_table.c.id, ingredients_table.c.name]
+        ).select_from(join)
+        recipe_query = recipes_table.select().where(recipes_table.c.id == id)
+
+        ingredients = await self.db.fetch_all(ingredients_query)
+        recipe = await self.db.fetch_one(recipe_query)
 
         if recipe is None:
             return None
 
-        return RecipeModel(**recipe)
+        return RecipeModelWithIngredients(
+            **recipe,
+            ingredients=[
+                IngredientForRecipe(**ingredient) for ingredient in ingredients
+            ]
+        )
 
     async def update_recipe(
         self, id: str, updated_recipe: UpdatedRecipeModel
-    ) -> Optional[RecipeModel]:
-
-        recipe: Optional[RecipeModel] = await self.get_one_recipe(id)
+    ) -> Optional[RecipeModelWithIngredients]:
+        recipe_table = RecipeOrm.table()
+        recipe: Optional[RecipeModelWithIngredients] = await self.get_one_recipe(id)
 
         if recipe is None:
             return None
@@ -57,23 +97,34 @@ class RecipeRepository(BaseRepository):
             if recipe_val is not None
         }
 
-        query = (
-            RecipeOrm.table()
-            .update()
-            .where(RecipeOrm.table().c["id"] == id)
-            .values(**values)
-        )
-        await self.db.execute(query)
+        ingredients_to_delete = [
+            ingredient
+            for ingredient in values.get("ingredients")
+            if ingredient.get("is_deleted") is True
+        ]
+
+        values.pop("ingredients")
+
+        sql = recipe_table.update().where(recipe_table.c.id == id).values(**values)
+
+        for ingredient in ingredients_to_delete:
+            ingredient_sql = recipes_ingredients.delete().where(
+                recipes_ingredients.c.ingredient_id == ingredient.get("id")
+            )
+            await self.db.execute(ingredient_sql)
+
+        await self.db.execute(sql)
 
         return await self.get_one_recipe(id)
 
     async def delete_recipe(self, id: str) -> Optional[RecipeModel]:
         recipe: Optional[RecipeModel] = await self.get_one_recipe(id)
+        recipe_table = RecipeOrm.table()
 
         if recipe is None:
             return None
 
-        query = RecipeOrm.table().delete().where(RecipeOrm.table().c["id"] == id)
-        await self.db.execute(query)
+        sql = recipe_table.delete().where(RecipeOrm.table().c.id == id)
+        await self.db.execute(sql)
 
         return recipe

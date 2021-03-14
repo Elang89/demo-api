@@ -1,16 +1,22 @@
-import sys
-import os
-import asyncio
+# flake8: noqa
 
-sys.path = ["", ".."] + sys.path[1:]
+import asyncio
+import os
+import random
+import sys
+import uuid
 
 import sqlalchemy
-from faker import Faker
 from databases import Database
 from dotenv import load_dotenv
+from faker import Faker
 
-from app.models.recipe import RecipeModel
+from app.db.repositories.ingredient_repository import IngredientRepository
 from app.db.repositories.recipe_repository import RecipeRepository
+from app.models.ingredient import IngredientModel
+from app.models.recipe import RecipeModelWithIngredients
+
+sys.path = ["", ".."] + sys.path[1:]
 
 
 async def main():
@@ -29,15 +35,25 @@ async def main():
     database = Database(db_url)
     engine = sqlalchemy.create_engine(db_url)
     metadata.create_all(engine)
+    ingredient_list = []
 
     await database.connect()
 
     recipe_repo = RecipeRepository(database)
+    ingredient_repo = IngredientRepository(database)
 
     print("Seeding database...")
 
     for _ in range(0, 1000):
-        recipe = RecipeModel(name=fake.name(), description=fake.text())
+        ingredient = IngredientModel(name=str(uuid.uuid4()), description=fake.text())
+        ingredient_list.append(ingredient)
+        await ingredient_repo.create_ingredient(ingredient)
+
+    for _ in range(0, 1000):
+        ingredients = random.sample(ingredient_list, 5)
+        recipe = RecipeModelWithIngredients(
+            name=str(uuid.uuid4()), description=fake.text(), ingredients=ingredients
+        )
         await recipe_repo.create_recipe(recipe)
 
     print("Database seeded")

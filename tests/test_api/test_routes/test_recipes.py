@@ -1,3 +1,5 @@
+import random
+import uuid
 from typing import List
 
 import pytest
@@ -5,7 +7,12 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from starlette import status
 
-from app.models.recipe import RecipeModel, UpdatedRecipeModel
+from app.models.ingredient import IngredientModel
+from app.models.recipe import (
+    RecipeModel,
+    RecipeModelWithIngredients,
+    UpdatedRecipeModel,
+)
 
 pytestmark = pytest.mark.asyncio
 
@@ -21,15 +28,33 @@ DELETE_RECIPES_ROUTE = "recipes:delete-recipe"
     "id, name, description",
     [
         ("97950e81-afb7-4146-b12b-06877de48202", "ham sandwich", "something"),
-        ("7a5e2caa-d558-41bc-8703-837b16a5b6c6", "hamburger", "something"),
     ],
 )
 async def test_create_recipe(
-    app: FastAPI, client: AsyncClient, id: str, name: str, description: str
+    app: FastAPI,
+    client: AsyncClient,
+    id: str,
+    name: str,
+    description: str,
+    test_multiple_ingredients: List[IngredientModel],
 ) -> None:
+    ingredients = [
+        ingredient.dict() for ingredient in random.sample(test_multiple_ingredients, 5)
+    ]
+
+    ingredients = [
+        {"id": str(ingredient.get("id")), "name": ingredient.get("name")}
+        for ingredient in ingredients
+    ]
+
     response = await client.post(
         app.url_path_for(POST_RECIPES_ROUTE),
-        json={"id": id, "name": name, "description": description},
+        json={
+            "id": id,
+            "name": name,
+            "description": description,
+            "ingredients": ingredients,
+        },
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -141,7 +166,7 @@ async def test_get_one_recipe(
 
 
 async def test_get_one_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
-    recipe_id = "b26830fc-51b2-4182-92cc-bb233891a9fc"
+    recipe_id = str(uuid.uuid4())
 
     response = await client.get(app.url_path_for(GET_ONE_RECIPES_ROUTE, id=recipe_id))
 
@@ -149,26 +174,44 @@ async def test_get_one_not_found_recipe(app: FastAPI, client: AsyncClient) -> No
 
 
 async def test_update_recipe(
-    app: FastAPI, client: AsyncClient, test_recipe: RecipeModel
+    app: FastAPI,
+    client: AsyncClient,
+    test_recipe: RecipeModelWithIngredients,
+    test_ingredient: IngredientModel,
 ) -> None:
-    recipe = UpdatedRecipeModel(name="Something Else", description="Some other thing")
+
+    ingredients = [
+        {"id": str(ingredient.id), "name": ingredient.name, "is_deleted": True}
+        for ingredient in test_recipe.ingredients
+    ]
+
+    ingredients.append({"id": str(test_ingredient.id), "name": test_ingredient.name})
+
+    recipe = UpdatedRecipeModel(
+        name="Something Else", description="Some other thing", ingredients=ingredients
+    )
 
     response = await client.patch(
         app.url_path_for(UPDATE_RECIPES_ROUTE, id=test_recipe.id),
-        json={"name": recipe.name, "description": recipe.description},
+        json={
+            "name": recipe.name,
+            "description": recipe.description,
+            "ingredients": ingredients,
+        },
     )
 
     assert response.status_code == status.HTTP_200_OK
 
-    updated_recipe = RecipeModel(**response.json())
+    updated_recipe = RecipeModelWithIngredients(**response.json())
 
     assert test_recipe.id == updated_recipe.id
     assert recipe.name == updated_recipe.name
     assert recipe.description == updated_recipe.description
+    assert len(recipe.ingredients) != len(updated_recipe.ingredients)
 
 
 async def test_update_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
-    recipe_id = "b26830fc-51b2-4182-92cc-bb233891a9fc"
+    recipe_id = str(uuid.uuid4())
 
     response = await client.patch(
         app.url_path_for(UPDATE_RECIPES_ROUTE, id=recipe_id),
@@ -194,7 +237,7 @@ async def test_delete_recipe(
 
 @pytest.mark.skip(reason="Not Implemented")
 async def test_delete_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
-    recipe_id = "b26830fc-51b2-4182-92cc-bb233891a9fc"
+    recipe_id = str(uuid.uuid4())
 
     response = await client.get(app.url_path_for(GET_ONE_RECIPES_ROUTE, id=recipe_id))
 

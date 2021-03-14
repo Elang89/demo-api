@@ -22,7 +22,7 @@ class IngredientOrm(Base):
 
     @classmethod
     def table(cls):
-        return cls.__tablename__
+        return cls.__table__
 
 
 class IngredientModel(BaseModel):
@@ -40,3 +40,12 @@ class UpdatedIngredientModel(BaseModel):
     name: Optional[str] = Field(max_length=50)
     description: Optional[str] = Field(max_length=500)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class IngredientForRecipe(BaseModel):
+    id: UUID
+    name: str
+
+
+class UpdatedIngredientForRecipe(IngredientForRecipe):
+    is_deleted: bool = Field(default=False)

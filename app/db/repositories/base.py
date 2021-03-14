@@ -1,6 +1,7 @@
 from typing import Dict, List
+
 from databases import Database
-from sqlalchemy import text, Table
+from sqlalchemy import Table, text
 from sqlalchemy.orm import Query
 
 

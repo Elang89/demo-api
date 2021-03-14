@@ -36,3 +36,11 @@ async def connect_to_db(app: FastAPI) -> None:
     app.state.db = database
 
     logger.info("Connection established")
+
+
+async def close_db_connection(app: FastAPI) -> None:
+    logger.info("Closing connection to database.")
+
+    await app.state.db.disconnect()
+
+    logger.info("Connection closed.")

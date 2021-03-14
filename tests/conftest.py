@@ -1,6 +1,6 @@
+import threading
 import time
 import uuid
-import threading
 from os import environ
 from typing import List
 
@@ -14,10 +14,10 @@ from httpx import AsyncClient
 
 import alembic.config
 from alembic.config import Config
-from app.db.repositories.recipe_repository import RecipeRepository
 from app.db.repositories.ingredient_repository import IngredientRepository
-from app.models.recipe import RecipeModel
-from app.models.ingredient import IngredientModel
+from app.db.repositories.recipe_repository import RecipeRepository
+from app.models.ingredient import IngredientForRecipe, IngredientModel
+from app.models.recipe import RecipeModelWithIngredients
 
 PG_DOCKER_IMAGE = "postgres:13.0-alpine"
 
@@ -102,22 +102,45 @@ def db(initialized_app: FastAPI) -> Database:
 
 
 @pytest.fixture
-async def test_recipe(db: Database, faker: Faker) -> RecipeModel:
-    repo = RecipeRepository(db)
+async def test_recipe(db: Database, faker: Faker) -> RecipeModelWithIngredients:
+    recipe_repo = RecipeRepository(db)
+    ingredient_repo = IngredientRepository(db)
 
-    return await repo.create_recipe(
-        RecipeModel(name=faker.name(), description=faker.text())
+    ingredient = await ingredient_repo.create_ingredient(
+        IngredientModel(name=faker.name(), description=faker.text())
+    )
+
+    return await recipe_repo.create_recipe(
+        RecipeModelWithIngredients(
+            name=faker.name(),
+            description=faker.text(),
+            ingredients=[IngredientForRecipe(id=ingredient.id, name=ingredient.name)],
+        )
     )
 
 
 @pytest.fixture
-async def test_multiple_recipes(db: Database, faker: Faker) -> List[RecipeModel]:
+async def test_multiple_recipes(
+    db: Database, faker: Faker
+) -> List[RecipeModelWithIngredients]:
     repo = RecipeRepository(db)
     recipes = []
 
+    ingredient_repo = IngredientRepository(db)
+
+    ingredient = await ingredient_repo.create_ingredient(
+        IngredientModel(name=faker.name(), description=faker.text())
+    )
+
     for _ in range(0, 500):
         recipe = await repo.create_recipe(
-            RecipeModel(name=faker.name(), description=faker.text())
+            RecipeModelWithIngredients(
+                name=faker.name(),
+                description=faker.text(),
+                ingredients=[
+                    IngredientForRecipe(id=ingredient.id, name=ingredient.name)
+                ],
+            )
         )
         recipes.append(recipe)
     return recipes
@@ -128,7 +151,7 @@ async def test_ingredient(db: Database, faker: Faker) -> IngredientModel:
     repo = IngredientRepository(db)
 
     return await repo.create_ingredient(
-        IngredientModel(name=faker.name(), description=faker.text())
+        IngredientModel(name=str(uuid.uuid4()), description=faker.text())
     )
 
 
@@ -137,8 +160,14 @@ async def test_multiple_ingredients(
     db: Database, faker: Faker
 ) -> List[IngredientModel]:
     repo = IngredientRepository(db)
+    ingredients = []
 
     for _ in range(0, 500):
-        recipe = await repo.create_ingredient(
-            IngredientModel(name=faker.name(), description=faker.text())
+
+        ingredient = await repo.create_ingredient(
+            IngredientModel(name=str(uuid.uuid4()), description=faker.text())
         )
+
+        ingredients.append(ingredient)
+
+    return ingredients

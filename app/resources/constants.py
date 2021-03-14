@@ -1,6 +1,9 @@
 # Error messages recipes
 RECIPE_DOES_NOT_EXIST = "Recipe does not exist"
 
+# Error messages ingredients
+INGREDIENT_DOES_NOT_EXIST = "Ingredient does not exist"
+
 # Tags
 TAG_RECIPES = "recipes"
 TAG_INGREDIENTS = "ingredients"
@@ -20,6 +23,11 @@ QUERY_RECIPE_FILTER_REGEX = (
     "((name)\\sLIKE\\s'.*')|((created_at|updated_at)\\s[><=][=]?\\s'.*')"
 )
 
+# Query ingredient regexes
+QUERY_INGREDIENT_SORT_REGEX = "(name|created_at|updated_at):(asc|desc)"
+QUERY_INGREDIENT_FILTER_REGEX = (
+    "((name)\\sLIKE\\s'.*')|((created_at|updated_at)\\s[><=][=]?\\s'.*')"
+)
 # Status codes
 STATUS_CREATED_201 = 201
 STATUS_NOT_FOUND_404 = 404
