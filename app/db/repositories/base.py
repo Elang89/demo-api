@@ -19,6 +19,7 @@ class BaseRepository:
                 query = query.order_by(table.c[sort_key].asc())
             elif sort_value == "desc":
                 query = query.order_by(table.c[sort_key].desc())
+
         return query
 
     def _add_filters(self, query: Query, filters: List[str], table: Table):

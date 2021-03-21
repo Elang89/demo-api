@@ -5,16 +5,16 @@ from typing import List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from starlette import status
 from mimesis.random import Random
+from starlette import status
 
-from tests.common.constants import RECIPE_NAME_LENGTH, RECIPE_DESCRIPTION_LENGTH
 from app.models.ingredient import IngredientModel
 from app.models.recipe import (
     RecipeModel,
     RecipeModelWithIngredients,
     UpdatedRecipeModel,
 )
+from tests.common.constants import RECIPE_DESCRIPTION_LENGTH, RECIPE_NAME_LENGTH
 
 pytestmark = pytest.mark.asyncio
 
@@ -140,7 +140,7 @@ async def test_get_filtered_and_sorted_recipes(
 ) -> None:
     response = await client.get(
         app.url_path_for(GET_RECIPES_ROUTE),
-        params={"sort": "name:asc,created_at:desc", "filters": r"name LIKE 's%'"},
+        params={"sort": ["name:asc", "created_at:desc"], "filters": r"name LIKE 's%'"},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -148,7 +148,7 @@ async def test_get_filtered_and_sorted_recipes(
     recipes = [RecipeModel(**recipe) for recipe in response.json()]
 
     assert recipes == sorted(recipes, key=lambda recipe: recipe.name)
-    assert recipes == list(filter(lambda recipe: "s" in recipe.name), recipes)
+    assert recipes == list(filter(lambda recipe: "s" in recipe.name, recipes))
 
 
 async def test_get_one_recipe(

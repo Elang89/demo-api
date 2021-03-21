@@ -5,11 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.dependencies.database import get_repository
 from app.db.repositories.ingredient_repository import IngredientRepository
-from app.models.ingredient import (
-    IngredientForRecipe,
-    IngredientModel,
-    UpdatedIngredientModel,
-)
+from app.models.ingredient import IngredientModel, UpdatedIngredientModel
 from app.resources.constants import (
     ALIAS_INGREDIENT,
     INGREDIENT_DOES_NOT_EXIST,

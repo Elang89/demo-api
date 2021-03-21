@@ -1,14 +1,15 @@
 from typing import Dict, List, Optional
+
 from sqlalchemy import select
 
 from app.db.repositories.base import BaseRepository
+from app.models.ingredient import IngredientForRecipe, IngredientOrm
 from app.models.recipe import (
     RecipeModel,
     RecipeModelWithIngredients,
     RecipeOrm,
     UpdatedRecipeModel,
 )
-from app.models.ingredient import IngredientOrm, IngredientForRecipe
 from app.models.recipes_ingredients import recipes_ingredients
 
 RECIPES_TABLE = "recipes"

@@ -1,20 +1,19 @@
-import pytest
-
 from typing import List
-from mimesis.random import Random
+
+import pytest
 from databases import Database
+from mimesis.random import Random
 
-
-from tests.common.constants import (
-    INGREDIENT_NAME_LENGTH,
-    INGREDIENT_DESCRIPTION_LENGTH,
-    RECIPE_NAME_LENGTH,
-    RECIPE_DESCRIPTION_LENGTH,
-)
 from app.db.repositories.ingredient_repository import IngredientRepository
 from app.db.repositories.recipe_repository import RecipeRepository
 from app.models.ingredient import IngredientForRecipe, IngredientModel
 from app.models.recipe import RecipeModelWithIngredients
+from tests.common.constants import (
+    INGREDIENT_DESCRIPTION_LENGTH,
+    INGREDIENT_NAME_LENGTH,
+    RECIPE_DESCRIPTION_LENGTH,
+    RECIPE_NAME_LENGTH,
+)
 
 
 @pytest.fixture

@@ -1,12 +1,12 @@
-import pytest
-
 from typing import List
-from mimesis.random import Random
-from databases import Database
 
-from tests.common.constants import INGREDIENT_NAME_LENGTH, INGREDIENT_DESCRIPTION_LENGTH
+import pytest
+from databases import Database
+from mimesis.random import Random
+
 from app.db.repositories.ingredient_repository import IngredientRepository
 from app.models.ingredient import IngredientModel
+from tests.common.constants import INGREDIENT_DESCRIPTION_LENGTH, INGREDIENT_NAME_LENGTH
 
 
 @pytest.fixture

@@ -1,7 +1,5 @@
 import time
-import uuid
 from os import environ
-from typing import List
 
 import docker as libdocker
 import pytest
@@ -13,7 +11,6 @@ from mimesis.random import Random
 
 import alembic.config
 from alembic.config import Config
-
 
 PG_DOCKER_IMAGE = "postgres:13.0-alpine"
 PG_DOCKER_CONTAINER_NAME = "test-postgres"
