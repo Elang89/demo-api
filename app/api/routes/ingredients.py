@@ -26,7 +26,7 @@ router = APIRouter()
 
 
 @router.get(
-    "{id}",
+    "/{id}",
     name="ingredients:get-one-ingredient",
     tags=[TAG_INGREDIENTS],
     response_class=JSONResponse,
@@ -95,22 +95,6 @@ async def get_ingredients(
         sort_params=sort_params,
         filters=filters,
     )
-
-
-@router.get(
-    "/recipes/{id}/ingredients",
-    name="ingredients:get-recipe-ingredients",
-    tags=[TAG_INGREDIENTS],
-    response_class=JSONResponse,
-    response_model=List[IngredientForRecipe],
-)
-async def get_ingredients_for_recipes(
-    id: str,
-    ingredient_repo: IngredientRepository = Depends(
-        get_repository(IngredientRepository)
-    ),
-) -> List[IngredientForRecipe]:
-    return await ingredient_repo.get_ingredients_for_recipe(id)
 
 
 @router.post(

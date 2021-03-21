@@ -5,42 +5,45 @@ import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 from starlette import status
+from mimesis.random import Random
 
 from app.models.ingredient import IngredientModel, UpdatedIngredientModel
 from app.models.recipe import RecipeModel
+from tests.common.constants import INGREDIENT_NAME_LENGTH, INGREDIENT_DESCRIPTION_LENGTH
 
 pytestmark = pytest.mark.asyncio
 
 GET_INGREDIENTS_ROUTE = "ingredients:get-ingredients"
 GET_ONE_INGREDIENTS_ROUTE = "ingredients:get-one-ingredient"
-GET_RECIPE_INGREDIENTS_ROUTE = "ingredients:get-recipe-ingredients"
 POST_INGREDIENTS_ROUTE = "ingredients:create-ingredient"
 UPDATE_INGREDIENTS_ROUTE = "ingredients:update-ingredient"
 DELETE_INGREDIENTS_ROUTE = "ingredients:delete-ingredient"
 
 
-@pytest.mark.parametrize(
-    "id, name, description",
-    [
-        ("d50cf3bf-0149-4072-9034-86b66452bcc9", "ham", "something"),
-        ("f5837bdd-3010-4a58-9cb5-f635c8c067a2", "cheese", "something"),
-    ],
-)
 async def test_create_ingredient(
-    app: FastAPI, client: AsyncClient, id: str, name: str, description: str
+    app: FastAPI, client: AsyncClient, random_generator: Random
 ) -> None:
+    new_ingredient = IngredientModel(
+        name=random_generator.randstr(length=INGREDIENT_NAME_LENGTH),
+        description=random_generator.randstr(length=INGREDIENT_DESCRIPTION_LENGTH),
+    )
+
     response = await client.post(
         app.url_path_for(POST_INGREDIENTS_ROUTE),
-        json={"id": id, "name": name, "description": description},
+        json={
+            "id": str(new_ingredient.id),
+            "name": new_ingredient.name,
+            "description": new_ingredient.description,
+        },
     )
 
     assert response.status_code == status.HTTP_201_CREATED
 
     ingredient = IngredientModel(**response.json())
 
-    assert str(ingredient.id) == id
-    assert ingredient.name == name
-    assert ingredient.description == description
+    assert str(ingredient.id) == str(new_ingredient.id)
+    assert ingredient.name == new_ingredient.name
+    assert ingredient.description == new_ingredient.description
 
 
 async def test_get_ingredient(app: FastAPI, client: AsyncClient) -> None:
@@ -83,7 +86,7 @@ async def test_get_filtered_ingredients(
     ingredients = [IngredientModel(**ingredient) for ingredient in response.json()]
 
     assert ingredients == list(
-        filter(lambda ingredient: ingredient.name.contains("s"), ingredients)
+        filter(lambda ingredient: "s" in ingredient.name, ingredients)
     )
 
 
@@ -120,8 +123,12 @@ async def test_get_filtered_and_sorted_ingredients(
 
     ingredients = [IngredientModel(**ingredient) for ingredient in response.json()]
 
-    assert ingredients == sorted(ingredients, key=lambda ingredient: ingredient.name)
-    assert ingredients == list(filter(lambda ingredient: ingredient.name.contains("f")))
+    assert ingredients == sorted(
+        ingredients, key=lambda ingredient: ingredient.created_at
+    )
+    assert ingredients == list(
+        filter(lambda ingredient: "f" in ingredient.name, ingredients)
+    )
 
 
 async def test_get_one_ingredient(
@@ -151,10 +158,14 @@ async def test_get_one_not_found_ingredient(app: FastAPI, client: AsyncClient) -
 
 
 async def test_update_ingredient(
-    app: FastAPI, client: AsyncClient, test_ingredient: IngredientModel
+    app: FastAPI,
+    client: AsyncClient,
+    test_ingredient: IngredientModel,
+    random_generator: Random,
 ) -> None:
     ingredient = UpdatedIngredientModel(
-        name="Something Else", description="Some other thing"
+        name=random_generator.randstr(length=INGREDIENT_NAME_LENGTH),
+        description=random_generator.randstr(length=INGREDIENT_DESCRIPTION_LENGTH),
     )
 
     response = await client.patch(
@@ -196,18 +207,3 @@ async def test_delete_not_found_ingredient(app: FastAPI, client: AsyncClient) ->
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
-
-
-@pytest.mark.skip(reason="Not implemented yet")
-async def test_get_ingredients_for_recipe(
-    app: FastAPI, client: AsyncClient, test_recipe: RecipeModel
-) -> None:
-    response = await client.get(
-        app.url_path_for(GET_RECIPE_INGREDIENTS_ROUTE, id=test_recipe.id)
-    )
-
-    assert response.status_code == status.HTTP_200_OK
-
-    recipe_ingredients = response.json()
-
-    assert isinstance(recipe_ingredients, list) == True

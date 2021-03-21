@@ -6,7 +6,9 @@ import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
 from starlette import status
+from mimesis.random import Random
 
+from tests.common.constants import RECIPE_NAME_LENGTH, RECIPE_DESCRIPTION_LENGTH
 from app.models.ingredient import IngredientModel
 from app.models.recipe import (
     RecipeModel,
@@ -24,20 +26,17 @@ UPDATE_RECIPES_ROUTE = "recipes:update-recipe"
 DELETE_RECIPES_ROUTE = "recipes:delete-recipe"
 
 
-@pytest.mark.parametrize(
-    "id, name, description",
-    [
-        ("97950e81-afb7-4146-b12b-06877de48202", "ham sandwich", "something"),
-    ],
-)
 async def test_create_recipe(
     app: FastAPI,
     client: AsyncClient,
-    id: str,
-    name: str,
-    description: str,
+    random_generator: Random,
     test_multiple_ingredients: List[IngredientModel],
 ) -> None:
+    new_recipe = RecipeModel(
+        name=random_generator.randstr(length=RECIPE_NAME_LENGTH),
+        description=random_generator.randstr(length=RECIPE_DESCRIPTION_LENGTH),
+    )
+
     ingredients = [
         ingredient.dict() for ingredient in random.sample(test_multiple_ingredients, 5)
     ]
@@ -50,9 +49,9 @@ async def test_create_recipe(
     response = await client.post(
         app.url_path_for(POST_RECIPES_ROUTE),
         json={
-            "id": id,
-            "name": name,
-            "description": description,
+            "id": str(new_recipe.id),
+            "name": new_recipe.name,
+            "description": new_recipe.description,
             "ingredients": ingredients,
         },
     )
@@ -61,9 +60,9 @@ async def test_create_recipe(
 
     recipe = RecipeModel(**response.json())
 
-    assert str(recipe.id) == id
-    assert recipe.name == name
-    assert recipe.description == description
+    assert str(recipe.id) == str(new_recipe.id)
+    assert recipe.name == new_recipe.name
+    assert recipe.description == new_recipe.description
 
 
 async def test_create_unprocessable_recipe(app: FastAPI, client: AsyncClient) -> None:
@@ -111,7 +110,9 @@ async def test_get_filtered_recipes(
 
     recipes = [RecipeModel(**recipe) for recipe in response.json()]
 
-    assert recipes == list(filter(lambda recipe: recipe.name.contains("s"), recipes))
+    assert recipes == list(
+        filter(lambda recipe: "s" in recipe.name, recipes),
+    )
 
 
 async def test_get_unprocessable_sorted_recipes(
@@ -147,7 +148,7 @@ async def test_get_filtered_and_sorted_recipes(
     recipes = [RecipeModel(**recipe) for recipe in response.json()]
 
     assert recipes == sorted(recipes, key=lambda recipe: recipe.name)
-    assert recipes == list(filter(lambda recipe: recipe.name.contains("s"), recipes))
+    assert recipes == list(filter(lambda recipe: "s" in recipe.name), recipes)
 
 
 async def test_get_one_recipe(
@@ -235,7 +236,6 @@ async def test_delete_recipe(
     assert deleted_recipe.id == test_recipe.id
 
 
-@pytest.mark.skip(reason="Not Implemented")
 async def test_delete_not_found_recipe(app: FastAPI, client: AsyncClient) -> None:
     recipe_id = str(uuid.uuid4())
 
