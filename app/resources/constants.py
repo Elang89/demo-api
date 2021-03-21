@@ -20,13 +20,13 @@ QUERY_DEFAULT_OFFSET = 0
 # Query recipe regexes
 QUERY_RECIPE_SORT_REGEX = "(name|created_at|updated_at):(asc|desc)"
 QUERY_RECIPE_FILTER_REGEX = (
-    "((name)\\sLIKE\\s'.*')|((created_at|updated_at)\\s[><=][=]?\\s'.*')"
+    "((name)\\sLIKE\\s'\\%.*\\%')|((created_at|updated_at)\\s[><=][=]?\\s'.*')"
 )
 
 # Query ingredient regexes
 QUERY_INGREDIENT_SORT_REGEX = "(name|created_at|updated_at):(asc|desc)"
 QUERY_INGREDIENT_FILTER_REGEX = (
-    "((name)\\sLIKE\\s'.*')|((created_at|updated_at)\\s[><=][=]?\\s'.*')"
+    "((name)\\sLIKE\\s'\\%.*\\%')|((created_at|updated_at)\\s[><=][=]?\\s'.*')"
 )
 # Status codes
 STATUS_CREATED_201 = 201

@@ -77,7 +77,7 @@ async def test_get_filtered_ingredients(
 ) -> None:
     response = await client.get(
         app.url_path_for(GET_INGREDIENTS_ROUTE),
-        params={"filters": r"name LIKE 's%'"},
+        params={"filters": r"name LIKE '%s%'"},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -115,7 +115,7 @@ async def test_get_filtered_and_sorted_ingredients(
 ) -> None:
     response = await client.get(
         app.url_path_for(GET_INGREDIENTS_ROUTE),
-        params={"sort": ["name:asc", "created_at:desc"], "filters": r"name LIKE 'f%'"},
+        params={"sort": ["name:asc", "created_at:desc"], "filters": r"name LIKE '%f%'"},
     )
 
     assert response.status_code == status.HTTP_200_OK

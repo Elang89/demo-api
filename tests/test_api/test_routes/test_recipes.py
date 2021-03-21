@@ -103,7 +103,7 @@ async def test_get_filtered_recipes(
     app: FastAPI, client: AsyncClient, test_multiple_recipes: List[RecipeModel]
 ) -> None:
     response = await client.get(
-        app.url_path_for(GET_RECIPES_ROUTE), params={"filters": r"name LIKE 's%'"}
+        app.url_path_for(GET_RECIPES_ROUTE), params={"filters": r"name LIKE '%s%'"}
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -140,7 +140,7 @@ async def test_get_filtered_and_sorted_recipes(
 ) -> None:
     response = await client.get(
         app.url_path_for(GET_RECIPES_ROUTE),
-        params={"sort": ["name:asc", "created_at:desc"], "filters": r"name LIKE 's%'"},
+        params={"sort": ["name:asc", "created_at:desc"], "filters": r"name LIKE '%s%'"},
     )
 
     assert response.status_code == status.HTTP_200_OK
