@@ -6,15 +6,17 @@ from fastapi.responses import JSONResponse
 from app.api.dependencies.database import get_repository
 from app.db.repositories.ingredient_repository import IngredientRepository
 from app.models.ingredient import IngredientModel, UpdatedIngredientModel
-from app.resources.constants import (
-    ALIAS_INGREDIENT,
-    INGREDIENT_DOES_NOT_EXIST,
+from app.resources.common_constants import (
     QUERY_DEFAULT_LIMIT,
     QUERY_DEFAULT_OFFSET,
+    STATUS_CREATED,
+    STATUS_NOT_FOUND,
+)
+from app.resources.ingredient_constants import (
+    ALIAS_INGREDIENT,
+    INGREDIENT_DOES_NOT_EXIST,
     QUERY_INGREDIENT_FILTER_REGEX,
     QUERY_INGREDIENT_SORT_REGEX,
-    STATUS_CREATED_201,
-    STATUS_NOT_FOUND_404,
     TAG_INGREDIENTS,
 )
 
@@ -31,7 +33,7 @@ router = APIRouter()
 async def get_one_ingredient(
     id: str,
     ingredient_repo: IngredientRepository = Depends(
-        get_repository(IngredientRepository)
+        get_repository(IngredientRepository),
     ),
 ) -> IngredientModel:
 
@@ -39,7 +41,8 @@ async def get_one_ingredient(
 
     if ingredient is None:
         raise HTTPException(
-            status_code=STATUS_NOT_FOUND_404, detail=INGREDIENT_DOES_NOT_EXIST
+            status_code=STATUS_NOT_FOUND,
+            detail=INGREDIENT_DOES_NOT_EXIST,
         )
 
     return ingredient
@@ -76,7 +79,7 @@ async def get_ingredients(
         regex=QUERY_INGREDIENT_FILTER_REGEX,
     ),
     ingredient_repo: IngredientRepository = Depends(
-        get_repository(IngredientRepository)
+        get_repository(IngredientRepository),
     ),
 ) -> List[IngredientModel]:
     sort_params = {}
@@ -99,12 +102,12 @@ async def get_ingredients(
     tags=[TAG_INGREDIENTS],
     response_class=JSONResponse,
     response_model=IngredientModel,
-    status_code=STATUS_CREATED_201,
+    status_code=STATUS_CREATED,
 )
 async def create_ingredient(
     ingredient: IngredientModel = Body(..., alias=ALIAS_INGREDIENT),
     ingredient_repo: IngredientRepository = Depends(
-        get_repository(IngredientRepository)
+        get_repository(IngredientRepository),
     ),
 ) -> IngredientModel:
     return await ingredient_repo.create_ingredient(ingredient)
@@ -121,13 +124,13 @@ async def update_ingredient(
     id: str,
     updated_ingredient: UpdatedIngredientModel = Body(..., alias=ALIAS_INGREDIENT),
     ingredient_repo: IngredientRepository = Depends(
-        get_repository(IngredientRepository)
+        get_repository(IngredientRepository),
     ),
 ) -> IngredientModel:
     ingredient = await ingredient_repo.update_ingredient(id, updated_ingredient)
 
     if ingredient is None:
-        raise HTTPException(STATUS_NOT_FOUND_404, detail=INGREDIENT_DOES_NOT_EXIST)
+        raise HTTPException(STATUS_NOT_FOUND, detail=INGREDIENT_DOES_NOT_EXIST)
 
     return ingredient
 
@@ -142,12 +145,12 @@ async def update_ingredient(
 async def delete_ingredient(
     id: str,
     ingredient_repo: IngredientRepository = Depends(
-        get_repository(IngredientRepository)
+        get_repository(IngredientRepository),
     ),
 ) -> IngredientModel:
     ingredient = await ingredient_repo.delete_ingredient(id)
 
     if ingredient is None:
-        raise HTTPException(STATUS_NOT_FOUND_404, detail=INGREDIENT_DOES_NOT_EXIST)
+        raise HTTPException(STATUS_NOT_FOUND, detail=INGREDIENT_DOES_NOT_EXIST)
 
     return ingredient

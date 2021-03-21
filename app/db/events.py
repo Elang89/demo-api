@@ -1,4 +1,4 @@
-import sqlalchemy
+import sqlalchemy  # type: ignore
 from databases import Database
 from fastapi import FastAPI
 from loguru import logger

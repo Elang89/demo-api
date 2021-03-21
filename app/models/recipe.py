@@ -3,38 +3,42 @@ from typing import List, Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, DateTime, String, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column  # type: ignore
+from sqlalchemy import DateTime, String, Table, Text
+from sqlalchemy.ext.declarative import declarative_base  # type: ignore
+from sqlalchemy.orm import relationship  # type: ignore
 
-from app.models.custom import GUID
+from app.models.custom import GUID  # type: ignore
 from app.models.ingredient import IngredientForRecipe, UpdatedIngredientForRecipe
 from app.models.recipes_ingredients import recipes_ingredients
+from app.resources.recipe_constants import RECIPE_DESCRIPTION_MAX, RECIPE_NAME_MAX
 
 Base = declarative_base()
 
 
-class RecipeOrm(Base):
+class RecipeOrm(Base):  # type: ignore
     __tablename__ = "recipes"
 
     id = Column(GUID, primary_key=True)
-    name = Column(String(50), nullable=False, unique=True)
+    name = Column(String(RECIPE_NAME_MAX), nullable=False, unique=True)
     description = Column(Text, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=True)
     children = relationship(
-        "Ingredient", secondary=recipes_ingredients, order_by="Ingredient.name"
+        "Ingredient",
+        secondary=recipes_ingredients,
+        order_by="Ingredient.name",
     )
 
     @classmethod
-    def table(cls):
+    def table(cls) -> Table:
         return cls.__table__
 
 
 class RecipeModel(BaseModel):
     id: UUID = Field(default_factory=uuid4)
-    name: str = Field(max_length=50)
-    description: str = Field(max_length=500)
+    name: str = Field(max_length=RECIPE_NAME_MAX)
+    description: str = Field(max_length=RECIPE_DESCRIPTION_MAX)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default=None)
 
@@ -44,15 +48,15 @@ class RecipeModel(BaseModel):
 
 class RecipeModelWithIngredients(BaseModel):
     id: UUID = Field(default_factory=uuid4)
-    name: str = Field(max_length=50)
-    description: str = Field(max_length=500)
+    name: str = Field(max_length=RECIPE_NAME_MAX)
+    description: str = Field(max_length=RECIPE_DESCRIPTION_MAX)
     ingredients: List[IngredientForRecipe]
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default=None)
 
 
 class UpdatedRecipeModel(BaseModel):
-    name: Optional[str] = Field(max_length=50)
-    description: Optional[str] = Field(max_length=500)
+    name: Optional[str] = Field(max_length=RECIPE_NAME_MAX)
+    description: Optional[str] = Field(max_length=RECIPE_DESCRIPTION_MAX)
     ingredients: Optional[List[UpdatedIngredientForRecipe]]
     updated_at: datetime = Field(default_factory=datetime.utcnow)

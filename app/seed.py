@@ -1,4 +1,5 @@
 # flake8: noqa
+# type: ignore
 
 import asyncio
 import os
@@ -9,7 +10,6 @@ import uuid
 import sqlalchemy
 from databases import Database
 from dotenv import load_dotenv
-from faker import Faker
 
 from app.db.repositories.ingredient_repository import IngredientRepository
 from app.db.repositories.recipe_repository import RecipeRepository
@@ -19,7 +19,7 @@ from app.models.recipe import RecipeModelWithIngredients
 sys.path = ["", ".."] + sys.path[1:]
 
 
-async def main():
+async def main() -> None:
     load_dotenv()
 
     fake = Faker()

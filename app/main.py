@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from fastapi_cprofile.profiler import CProfileMiddleware
+from fastapi_cprofile.profiler import CProfileMiddleware  # type: ignore
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 

@@ -1,7 +1,8 @@
-from sqlalchemy import Column, ForeignKey, Table
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column  # type: ignore
+from sqlalchemy import ForeignKey, Table
+from sqlalchemy.ext.declarative import declarative_base  # type: ignore
 
-from app.models.custom import GUID
+from app.models.custom import GUID  # type: ignore
 
 Base = declarative_base()
 

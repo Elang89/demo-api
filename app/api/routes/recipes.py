@@ -10,16 +10,18 @@ from app.models.recipe import (
     RecipeModelWithIngredients,
     UpdatedRecipeModel,
 )
-from app.resources.constants import (
-    ALIAS_RECIPE,
+from app.resources.common_constants import (
     QUERY_DEFAULT_LIMIT,
     QUERY_DEFAULT_OFFSET,
     QUERY_MAX_LIMIT,
+    STATUS_CREATED,
+    STATUS_NOT_FOUND,
+)
+from app.resources.recipe_constants import (
+    ALIAS_RECIPE,
     QUERY_RECIPE_FILTER_REGEX,
     QUERY_RECIPE_SORT_REGEX,
     RECIPE_DOES_NOT_EXIST,
-    STATUS_CREATED_201,
-    STATUS_NOT_FOUND_404,
     TAG_RECIPES,
 )
 
@@ -34,15 +36,14 @@ router = APIRouter()
     response_model=RecipeModelWithIngredients,
 )
 async def get_one_recipe(
-    id: str, recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository))
+    id: str,
+    recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
 ) -> RecipeModelWithIngredients:
 
     recipe = await recipe_repo.get_one_recipe(id)
 
     if recipe is None:
-        raise HTTPException(
-            status_code=STATUS_NOT_FOUND_404, detail=RECIPE_DOES_NOT_EXIST
-        )
+        raise HTTPException(status_code=STATUS_NOT_FOUND, detail=RECIPE_DOES_NOT_EXIST)
 
     return recipe
 
@@ -100,7 +101,7 @@ async def get_recipes(
     tags=[TAG_RECIPES],
     response_model=RecipeModel,
     response_class=JSONResponse,
-    status_code=STATUS_CREATED_201,
+    status_code=STATUS_CREATED,
 )
 async def create_recipe(
     recipe: RecipeModelWithIngredients = Body(..., alias=ALIAS_RECIPE),
@@ -125,7 +126,7 @@ async def update_recipe(
     recipe = await recipe_repo.update_recipe(id, updated_recipe)
 
     if recipe is None:
-        raise HTTPException(STATUS_NOT_FOUND_404, detail=RECIPE_DOES_NOT_EXIST)
+        raise HTTPException(STATUS_NOT_FOUND, detail=RECIPE_DOES_NOT_EXIST)
 
     return recipe
 
@@ -138,11 +139,12 @@ async def update_recipe(
     response_model=RecipeModel,
 )
 async def delete_recipe(
-    id: str, recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository))
-) -> RecipeModel:
+    id: str,
+    recipe_repo: RecipeRepository = Depends(get_repository(RecipeRepository)),
+) -> RecipeModelWithIngredients:
     recipe = await recipe_repo.delete_recipe(id)
 
     if recipe is None:
-        raise HTTPException(STATUS_NOT_FOUND_404, detail=RECIPE_DOES_NOT_EXIST)
+        raise HTTPException(STATUS_NOT_FOUND, detail=RECIPE_DOES_NOT_EXIST)
 
     return recipe

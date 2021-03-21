@@ -1,8 +1,9 @@
 from typing import Dict, List
 
 from databases import Database
-from sqlalchemy import Table, text
-from sqlalchemy.orm import Query
+from sqlalchemy import Table  # type: ignore
+from sqlalchemy import text
+from sqlalchemy.orm import Query  # type: ignore
 
 
 class BaseRepository:
@@ -13,7 +14,12 @@ class BaseRepository:
     def db(self) -> Database:
         return self._db
 
-    def _add_sorting(self, query: Query, sort_params: Dict[str, str], table: Table):
+    def _add_sorting(
+        self,
+        query: Query,
+        sort_params: Dict[str, str],
+        table: Table,
+    ) -> Query:
         for sort_key, sort_value in sort_params.items():
             if sort_value == "asc":
                 query = query.order_by(table.c[sort_key].asc())
@@ -22,7 +28,7 @@ class BaseRepository:
 
         return query
 
-    def _add_filters(self, query: Query, filters: List[str], table: Table):
+    def _add_filters(self, query: Query, filters: List[str], table: Table) -> Query:
 
         for filter_param in filters:
             query = query.where(text(filter_param))
