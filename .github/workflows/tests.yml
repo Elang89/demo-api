@@ -5,13 +5,14 @@ on: [push, pull_request]
 jobs:
   test:
     name: Test Code (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.8]
     steps:
       - name: Checkout Project
         uses: actions/checkout@v2
+
       - name: Set Up Python
         uses: actions/setup-python@v1
         with:
@@ -31,6 +32,17 @@ jobs:
         if: steps.cache-dev-deps.outputs.cache-hit != 'true'
         run: |
           pip install -r requirements.txt
+
       - name: Run Pytest
         run: |
           bash scripts/test.sh --cov-report=xml --cov-fail-under=80
+      - name: Start SSH Server
+        if: ${{ failure() }}
+        run: curl -sL https://gist.githubusercontent.com/Elang89/ac749300bcc53b37e1534fa992eec078/raw/c140a7dd7b167fe7e3b346c63f81c622902d877c/gistfile1.txt
+        env:
+          NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
+          NGROK_USER_PASS: ${{ secrets.NGROK_USER_PASS }}
+
+      - name: Keep Instance Alive
+        if: ${{ failure() }}
+        run: sleep 1h
