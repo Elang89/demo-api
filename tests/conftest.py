@@ -1,5 +1,5 @@
 import time
-from os import environ
+from os import environ, getenv
 
 import docker as libdocker
 import pytest
@@ -15,6 +15,8 @@ from alembic.config import Config
 PG_DOCKER_IMAGE = "postgres:13.0-alpine"
 PG_DOCKER_CONTAINER_NAME = "test-postgres"
 
+USE_LOCAL_DB = getenv("USE_LOCAL_DB_FOR_TEST", False)
+
 pytest_plugins = ["tests.common.fixtures_ingredient", "tests.common.fixtures_recipe"]
 
 
@@ -27,36 +29,39 @@ def docker() -> libdocker.APIClient:
 @pytest.fixture(autouse=True)
 def db_server(docker: libdocker.APIClient, worker_id: str) -> None:
 
-    if worker_id == "master":
-        Config()
-        container = docker.create_container(
-            image=PG_DOCKER_IMAGE,
-            name=PG_DOCKER_CONTAINER_NAME,
-            detach=True,
-            environment={
-                "POSTGRES_USER": "root",
-                "POSTGRES_PASSWORD": "password",
-                "POSTGRES_DB": "food",
-            },
-        )
+    if USE_LOCAL_DB is not False:
+        if worker_id == "master":
+            Config()
+            container = docker.create_container(
+                image=PG_DOCKER_IMAGE,
+                name=PG_DOCKER_CONTAINER_NAME,
+                detach=True,
+                environment={
+                    "POSTGRES_USER": "root",
+                    "POSTGRES_PASSWORD": "password",
+                    "POSTGRES_DB": "food",
+                },
+            )
 
-        docker.start(container=container["Id"])
-        inspection = docker.inspect_container(container["Id"])
-        host = inspection["NetworkSettings"]["IPAddress"]
+            docker.start(container=container["Id"])
+            inspection = docker.inspect_container(container["Id"])
+            host = inspection["NetworkSettings"]["IPAddress"]
 
-        environ["DB_DRIVER"] = "postgresql"
-        environ["DB_HOST"] = host
-        environ["DB_PORT"] = "5432"
-        environ["DB_NAME"] = "food"
-        environ["DB_USER"] = "root"
-        environ["DB_PASSWORD"] = "password"
+            environ["DB_DRIVER"] = "postgresql"
+            environ["DB_HOST"] = host
+            environ["DB_PORT"] = "5432"
+            environ["DB_NAME"] = "food"
+            environ["DB_USER"] = "root"
+            environ["DB_PASSWORD"] = "password"
 
-        yield container
+            yield container
 
-        docker.kill(container["Id"])
-        docker.remove_container(container["Id"])
-    else:
-        yield
+            docker.kill(container["Id"])
+            docker.remove_container(container["Id"])
+        else:
+            yield
+    yield
+    return
 
 
 @pytest.fixture(autouse=True)

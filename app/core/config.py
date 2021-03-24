@@ -24,7 +24,7 @@ DB_HOST: str = config("DB_HOST", default="0.0.0.0")
 DB_PORT: str = config("DB_PORT", default="5432")
 DB_NAME: str = config("DB_NAME", default="food")
 DB_USER: str = config("DB_USER", default="root")
-DB_PASSWORD: str = config("DB_PASSWORD", default="pass")
+DB_PASSWORD: str = config("DB_PASSWORD", default="password")
 
 
 # Log settings
