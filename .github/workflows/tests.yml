@@ -58,7 +58,8 @@ jobs:
           DB_USER: root
           DB_PASSWORD: password
         run: |
-          USE_LOCAL_DB_FOR_TEST=true 
+          USE_LOCAL_DB_FOR_TEST=true
+          source .venv/bin/activate
           bash scripts/test.sh
 
       - name: Setup Upterm Session

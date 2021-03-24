@@ -41,4 +41,5 @@ jobs:
 
       - name: Run Linters
         run: |
+          source .venv/bin/activate
           bash scripts/lint.sh
