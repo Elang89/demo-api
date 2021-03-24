@@ -60,8 +60,9 @@ def db_server(docker: libdocker.APIClient, worker_id: str) -> None:
             docker.remove_container(container["Id"])
         else:
             yield
-    yield
-    return
+    else:
+        yield
+        return
 
 
 @pytest.fixture(autouse=True)
