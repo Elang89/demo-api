@@ -15,7 +15,6 @@ sys.path = ["", ".."] + sys.path[1:]
 config = context.config
 section = config.config_ini_section
 
-config.set_section_option(section, "DB_DRIVER", os.environ.get("DB_DRIVER"))
 config.set_section_option(section, "DB_USER", os.environ.get("DB_USER"))
 config.set_section_option(section, "DB_PASSWORD", os.environ.get("DB_PASSWORD"))
 config.set_section_option(section, "DB_HOST", os.environ.get("DB_HOST"))

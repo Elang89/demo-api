@@ -17,7 +17,6 @@ To run this application in docker as if it were in production use the following 
 1. Create an .env file to run the application. It should have the following format:
 
     ```env
-    DB_DRIVER="postgresql"
     DB_HOST="0.0.0.0"
     DB_PORT="5432"
     DB_NAME="food"
@@ -37,7 +36,6 @@ To run this application locally use the following instructions:
 3. Use `env.example` to create an .env file to run the application. It should have the following format:
 
     ```env
-    DB_DRIVER="postgresql"
     DB_HOST="0.0.0.0"
     DB_PORT="5432"
     DB_NAME="food"
@@ -56,7 +54,6 @@ To run the application tests use the following instructions:
 1. Create an .env file to run the application. It should have the following format:
 
     ```env
-    DB_DRIVER="postgresql"
     DB_HOST="0.0.0.0"
     DB_PORT="5432"
     DB_NAME="food"

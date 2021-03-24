@@ -22,10 +22,8 @@ sys.path = ["", ".."] + sys.path[1:]
 async def main() -> None:
     load_dotenv()
 
-    fake = Faker()
     metadata = sqlalchemy.MetaData()
-    db_url = "{driver}://{user}:{password}@{host}:{port}/{name}".format(
-        driver=os.environ.get("DB_DRIVER"),
+    db_url = "postgres://{user}:{password}@{host}:{port}/{name}".format(
         user=os.environ.get("DB_USER"),
         password=os.environ.get("DB_PASSWORD"),
         host=os.environ.get("DB_HOST"),

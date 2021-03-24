@@ -19,7 +19,6 @@ DEBUG: bool = config("DEBUG", cast=bool, default=False)
 PROJECT_NAME: str = config("PROJECT_NAME", default="Food Automator API")
 
 # Database
-DB_DRIVER: str = config("DB_DRIVER", default="postgresql")
 DB_HOST: str = config("DB_HOST", default="0.0.0.0")
 DB_PORT: str = config("DB_PORT", default="5432")
 DB_NAME: str = config("DB_NAME", default="food")

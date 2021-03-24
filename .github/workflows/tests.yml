@@ -51,7 +51,6 @@ jobs:
 
       - name: Run Pytest
         env:
-          DB_DRIVER: postgresql
           DB_HOST: 0.0.0.0
           DB_PORT: 5432
           DB_NAME: food
@@ -60,6 +59,7 @@ jobs:
         run: |
           USE_LOCAL_DB_FOR_TEST=true
           source .venv/bin/activate
+          alembic upgrade head
           bash scripts/test.sh
 
       - name: Setup Upterm Session

@@ -1,8 +1,8 @@
-import time
 from os import environ, getenv
 
 import docker as libdocker
 import pytest
+import uuid
 from asgi_lifespan import LifespanManager
 from databases import Database
 from fastapi import FastAPI
@@ -34,7 +34,7 @@ def db_server(docker: libdocker.APIClient, worker_id: str) -> None:
             Config()
             container = docker.create_container(
                 image=PG_DOCKER_IMAGE,
-                name=PG_DOCKER_CONTAINER_NAME,
+                name=f"{PG_DOCKER_CONTAINER_NAME}-{uuid.uuidv4()}",
                 detach=True,
                 environment={
                     "POSTGRES_USER": "root",
@@ -47,7 +47,6 @@ def db_server(docker: libdocker.APIClient, worker_id: str) -> None:
             inspection = docker.inspect_container(container["Id"])
             host = inspection["NetworkSettings"]["IPAddress"]
 
-            environ["DB_DRIVER"] = "postgresql"
             environ["DB_HOST"] = host
             environ["DB_PORT"] = "5432"
             environ["DB_NAME"] = "food"
