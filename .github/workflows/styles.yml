@@ -26,7 +26,7 @@ jobs:
         id: cache-dev-deps
         with:
           path: .venv
-          key: venv-dev-${{ runner.os }}-py-${{ matrix.python-version }}-${{ hashFiles("requirements.txt") }}
+          key: venv-dev-${{ runner.os }}-py-${{ matrix.python-version }}-${{ hashFiles("**/requirements.txt") }}
           restore-keys: |
             venv-dev-${{ runner.os }}-py-${{ matrix.python-version }}
             venv-dev-${{ runner.os }}-py-
