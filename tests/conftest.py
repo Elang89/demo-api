@@ -75,7 +75,7 @@ def apply_migrations(db_server: None, worker_id: str) -> None:
 
 
 @pytest.fixture
-def app(worker_id: str) -> FastAPI:
+def app(apply_migrations: None) -> FastAPI:
     from app.main import get_application
 
     return get_application()
