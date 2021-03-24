@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Checkout Project
         uses: actions/checkout@v2
+
       - name: Set Up Python
         uses: actions/setup-python@v1
         with:
@@ -27,10 +28,12 @@ jobs:
       #       ${{ runner.os }}-py-${{ matrix.python-version }}-
       #       ${{ runner.os }}-py-
       #       ${{ runner.os }}-
+
       - name: Install dependencies
         if: steps.cache-dev-deps.outputs.cache-hit != 'true'
         run: |
           pip install -r requirements.txt
+
       - name: Run Linters
         run: |
           bash scripts/lint.sh

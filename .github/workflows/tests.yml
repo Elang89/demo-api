@@ -36,12 +36,12 @@ jobs:
       - name: Run Pytest
         run: |
           bash scripts/test.sh --cov-report=xml --cov-fail-under=80
+
       - name: Start SSH Server
-        if: ${{ failure() }}
-        run: curl -sL https://gist.githubusercontent.com/Elang89/ac749300bcc53b37e1534fa992eec078/raw/c140a7dd7b167fe7e3b346c63f81c622902d877c/gistfile1.txt
-        env:
-          NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
-          NGROK_USER_PASS: ${{ secrets.NGROK_USER_PASS }}
+        uses: luchihoratiu/debug-via-ssh@main
+        with:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          SSH_PASS: ${{ secrets.NGROK_USER_PASS }}
 
       - name: Keep Instance Alive
         if: ${{ failure() }}
