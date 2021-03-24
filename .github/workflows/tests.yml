@@ -53,7 +53,7 @@ jobs:
         env:
           DB_DRIVER: postgresql
           DB_HOST: 0.0.0.0
-          DB_PORT: 5432"
+          DB_PORT: 5432
           DB_NAME: food
           DB_USER: root
           DB_PASSWORD: password
