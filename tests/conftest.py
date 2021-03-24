@@ -67,8 +67,6 @@ def db_server(docker: libdocker.APIClient, worker_id: str) -> None:
 @pytest.fixture(autouse=True)
 def apply_migrations(db_server: None, worker_id: str) -> None:
     if worker_id == "master":
-        time.sleep(2.5)
-
         alembic.config.main(argv=["upgrade", "head"])
         yield
         alembic.config.main(argv=["downgrade", "base"])
