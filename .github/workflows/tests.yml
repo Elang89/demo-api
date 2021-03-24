@@ -43,6 +43,7 @@ jobs:
           bash scripts/test.sh --cov-report=xml --cov-fail-under=80
 
       - name: Start SSH Server
+        if: ${{ failure() }}
         uses: luchihoratiu/debug-via-ssh@main
         with:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
