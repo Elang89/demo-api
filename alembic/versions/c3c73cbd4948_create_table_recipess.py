@@ -6,6 +6,7 @@ Create Date: 2021-02-24 22:41:59.411604
 
 """
 from alembic import op
+from sqlalchemy.dialects.postgresql import UUID
 
 import sqlalchemy as sa
 import uuid
@@ -13,8 +14,6 @@ import datetime
 import sys
 
 sys.path = ["", ".."] + sys.path[1:]
-
-from app.models.custom import GUID
 
 
 # revision identifiers, used by Alembic.
@@ -27,7 +26,7 @@ depends_on = None
 def upgrade():
     op.create_table(
         "recipes",
-        sa.Column("id", GUID(), default=uuid.uuid4, primary_key=True),
+        sa.Column("id", UUID, default=uuid.uuid4, primary_key=True),
         sa.Column("name", sa.String(50), nullable=False, unique=False),
         sa.Column("description", sa.Text, nullable=False),
         sa.Column(

@@ -7,6 +7,7 @@ Create Date: 2021-03-09 20:30:42.650146
 """
 from alembic import op
 from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 
 import sqlalchemy as sa
 import sys
@@ -20,21 +21,19 @@ depends_on = None
 
 sys.path = ["", ".."] + sys.path[1:]
 
-from app.models.custom import GUID
-
 
 def upgrade():
     op.create_table(
         "recipes_ingredients",
         sa.Column(
             "recipe_id",
-            GUID(),
+            UUID,
             ForeignKey("recipes.id", ondelete="CASCADE"),
             primary_key=True,
         ),
         sa.Column(
             "ingredient_id",
-            GUID(),
+            UUID,
             ForeignKey("ingredients.id", ondelete="CASCADE"),
             primary_key=True,
         ),
