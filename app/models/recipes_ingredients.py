@@ -1,6 +1,6 @@
 from sqlalchemy import Column  # type: ignore
 from sqlalchemy import ForeignKey, Table
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID  # type: ignore
 from sqlalchemy.ext.declarative import declarative_base  # type: ignore
 
 Base = declarative_base()
