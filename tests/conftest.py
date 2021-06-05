@@ -1,8 +1,8 @@
+import uuid
 from os import environ, getenv
 
 import docker as libdocker
 import pytest
-import uuid
 from asgi_lifespan import LifespanManager
 from databases import Database
 from fastapi import FastAPI

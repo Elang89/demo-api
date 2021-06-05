@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
@@ -5,15 +6,13 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 from sqlalchemy import Column  # type: ignore
 from sqlalchemy import DateTime, String, Table, Text
-from sqlalchemy.ext.declarative import declarative_base  # type: ignore
 from sqlalchemy.dialects import postgresql  # type: ignore
+from sqlalchemy.ext.declarative import declarative_base  # type: ignore
 
 from app.resources.ingredient_constants import (
     INGREDIENT_DESCRIPTION_MAX,
     INGREDIENT_NAME_MAX,
 )
-
-import uuid
 
 Base = declarative_base()
 

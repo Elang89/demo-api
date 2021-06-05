@@ -1,7 +1,7 @@
+import uuid
 from datetime import datetime
 from typing import List, Optional
 from uuid import uuid4
-import uuid
 
 from pydantic import BaseModel, Field
 from sqlalchemy import Column  # type: ignore
