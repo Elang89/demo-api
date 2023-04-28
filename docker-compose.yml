@@ -2,55 +2,16 @@ version: "3.8"
 
 services:
   pg_db:
-    restart: always
-    build:
-      context: ./
-      dockerfile: pg.dockerfile
+    restart: unless-stopped
+    image: postgresql:15.2
     ports:
       - 5432:5432
     volumes:
       - /var/lib/postgresql/data
-
-  zookeeper:
-    restart: always
-    image: debezium/zookeeper:1.4
-    ports:
-      - 2181:2181
-      - 2888:2888
-      - 3888:3888
-
-  kafka:
-    restart: always
-    image: debezium/kafka:1.4
-    ports:
-      - 9092:9092
-    links:
-      - zookeeper
-    environment:
-      - ZOOKEEPER_CONNECT=zookeeper:2181
-
-  connect:
-    restart: always
-    image: debezium/connect:1.4
-    ports:
-      - 8083:8083
-    links:
-      - zookeeper
-      - kafka
-      - pg_db
-    environment:
-      - BOOTSTRAP_SERVERS=kafka:9092
-      - GROUP_ID=1
-      - CONFIG_STORAGE_TOPIC=my_connect_configs
-      - OFFSET_STORAGE_TOPIC=my_connect_offsets
-      - STATUS_STORAGE_TOPIC=my_connect_statuses
   # app:
   #   restart: always
   #   build:
   #     context: ./
-  #     dockerfile: dev.dockerfile
+  #     dockerfile: dockerfiles
   #   ports:
   #     - 8000:8000
-  #   depends_on:
-  #     - spanner
-  #     - keycloak

@@ -16,7 +16,6 @@ pytest-cov
 pytest-asyncio
 pytest-env
 pytest-randomly
-pytest-xdist[psutil]
 pytest-mimesis
 docker
 httpx
@@ -27,4 +26,3 @@ databases
 asyncpg
 psycopg2
 pydantic-sqlalchemy
-fastapi-cprofile
