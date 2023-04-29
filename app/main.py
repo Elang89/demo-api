@@ -17,14 +17,7 @@ from app.core.events import create_shutdown_handler, create_startup_handler
 def get_application() -> FastAPI:
     load_dotenv()
 
-    application = FastAPI(
-        title=PROJECT_NAME,
-        debug=DEBUG,
-        version=VERSION,
-        docs_url=f"{API_PREFIX}/docs",
-        redoc_url=f"{API_PREFIX}/redoc",
-        openapi_url=f"{API_PREFIX}/openapi.json",
-    )
+    application = FastAPI(title=PROJECT_NAME, debug=DEBUG, version=VERSION)
 
     if DEBUG:
         directory = "{current_dir}/tmp/output.pstats".format(current_dir=os.getcwd())
