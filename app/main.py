@@ -21,6 +21,9 @@ def get_application() -> FastAPI:
         title=PROJECT_NAME,
         debug=DEBUG,
         version=VERSION,
+        docs_url=f"{API_PREFIX}/docs",
+        redoc_url=f"{API_PREFIX}/redoc",
+        openapi_url=f"{API_PREFIX}/openapi.json",
     )
 
     if DEBUG:

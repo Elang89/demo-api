@@ -34,7 +34,6 @@ setup(
         "python-dotenv",
         "uvicorn",
         "python-keycloak",
-        "google-cloud-spanner",
         "fastapi>=0.45.0",
         "pydantic>=1.2.0,<2.0.0",
         "starlette",
