@@ -25,7 +25,7 @@ To run this application in docker as if it were in production use the following 
     DEBUG=false
     ```
 
-2. Run `docker-compose up -d pg_db app`
+2. Run `docker-compose up -d pg app`
 
 ### Local
 

@@ -1,17 +1,17 @@
 version: "3.8"
 
 services:
-  pg_db:
+  pg:
     restart: unless-stopped
     image: postgresql:15.2
     ports:
       - 5432:5432
     volumes:
       - /var/lib/postgresql/data
-  # app:
-  #   restart: always
-  #   build:
-  #     context: ./
-  #     dockerfile: dockerfiles
-  #   ports:
-  #     - 8000:8000
+  app:
+    restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: dockerfile
+    ports:
+      - 8000:8000

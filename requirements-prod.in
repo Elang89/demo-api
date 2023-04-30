@@ -1,0 +1,11 @@
+fastapi
+loguru
+uvicorn
+python-dotenv
+gunicorn
+alembic
+sqlalchemy
+databases
+asyncpg
+psycopg2
+pydantic-sqlalchemy
