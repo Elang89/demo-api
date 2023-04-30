@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from fastapi_cprofile.profiler import CProfileMiddleware  # type: ignore
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
@@ -37,7 +36,6 @@ def get_application() -> FastAPI:
         )
 
         application.add_middleware(
-            CProfileMiddleware,
             enable=True,
             server_app=application,
             filename=directory,
