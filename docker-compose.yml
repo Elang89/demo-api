@@ -3,15 +3,39 @@ version: "3.8"
 services:
   pg:
     restart: unless-stopped
-    image: postgresql:15.2
+    image: postgres:15.2
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=food
     ports:
       - 5432:5432
     volumes:
-      - /var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      cloud_manager:
+        ipv4_address: 172.23.0.9
+
   app:
     restart: unless-stopped
-    build:
-      context: ./
-      dockerfile: dockerfile
+    image: app:latest
     ports:
       - 8000:8000
+    depends_on:
+      - pg
+    networks:
+      cloud_manager:
+        ipv4_address: 172.23.0.7
+
+networks:
+  cloud_manager:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.23.0.0/24
+          gateway: 172.23.0.1
+
+volumes:
+  pg_data:

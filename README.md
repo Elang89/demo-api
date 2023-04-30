@@ -44,8 +44,7 @@ To run this application locally use the following instructions:
     DEBUG=true
     ```
 
-4. `docker-compose up -d pg_db`
-5. `uvicorn app.main:app --reload --host 0.0.0.0 --port <your-port-number-here>`
+4. `docker-compose up -d`
 
 ## Running Tests
 
@@ -67,4 +66,4 @@ To run the application tests use the following instructions:
 
 To access Open API docs please go to the following route:
 
-*http://localhost:3000/docs*
+*http://localhost:8000/api/v1/docs*
