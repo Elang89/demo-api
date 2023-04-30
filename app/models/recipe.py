@@ -59,5 +59,5 @@ class RecipeModelWithIngredients(BaseModel):
 class UpdatedRecipeModel(BaseModel):
     name: Optional[str] = Field(max_length=RECIPE_NAME_MAX)
     description: Optional[str] = Field(max_length=RECIPE_DESCRIPTION_MAX)
-    ingredients: Optional[List[UpdatedIngredientForRecipe]]
+    ingredients: List[UpdatedIngredientForRecipe]
     updated_at: datetime = Field(default_factory=datetime.utcnow)
